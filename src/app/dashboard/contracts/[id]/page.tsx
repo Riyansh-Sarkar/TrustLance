@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/useWallet";
 import { useEscrow } from "@/hooks/useEscrow";
@@ -27,6 +27,7 @@ export default function ContractDetailPage() {
   const {
     approveMilestone,
     submitMilestone: onChainSubmitMilestone,
+    fundContract,
     isLoading: isEscrowLoading,
     flagDispute: onChainFlagDispute,
     resolveDispute: onChainResolveDispute,
@@ -47,6 +48,34 @@ export default function ContractDetailPage() {
   const [resolveForm, setResolveForm] = useState({ releaseTo: "", amount: "" });
 
   const contractIsAccepted = contract?.isAccepted !== false;
+
+  const submittingWorkRef = useRef(false);
+  const approvingMilestoneRef = useRef(false);
+  const acceptingContractRef = useRef(false);
+  const fundingEscrowRef = useRef(false);
+  const cancellingContractRef = useRef(false);
+
+  const handleFundEscrow = async () => {
+    if (!contract || fundingEscrowRef.current) return;
+    fundingEscrowRef.current = true;
+    try {
+      const result = await fundContract(
+        contract.id,
+        contract.freelancerWallet,
+        contract.milestones.map(m => m.amount),
+        contract.milestones.map(m => m.description)
+      );
+      const txHash = (result as { hash?: string })?.hash || "pending";
+      await updateContract(contract.id, { contractAddress: txHash });
+      setContract(prev => prev ? { ...prev, contractAddress: txHash } : null);
+      toast.success("Escrow funded successfully!");
+      router.refresh();
+    } catch (err) {
+      console.error("Detail page fundEscrow error:", err);
+    } finally {
+      fundingEscrowRef.current = false;
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -79,9 +108,26 @@ export default function ContractDetailPage() {
 
   const handleSubmitWork = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!deliverableUrl || !contract || activeMilestoneIndex === -1) return;
+    if (!deliverableUrl || !contract || activeMilestoneIndex === -1 || submittingWorkRef.current) return;
 
+    if (activeMilestone?.status !== "pending") {
+      toast.error("This milestone has already been submitted and is awaiting client approval.");
+      return;
+    }
+
+    submittingWorkRef.current = true;
     setIsSubmittingWork(true);
+
+    console.log("[debug] handleSubmitWork pre-flight diagnostic:", {
+      contractId: contract.id,
+      milestoneIndex: activeMilestoneIndex,
+      currentMilestoneStatus: activeMilestone?.status,
+      contractStatus: contract.contractAddress ? "Funded" : "Accepted",
+      walletAddress: publicKey,
+      firestoreStatus: activeMilestone?.status,
+      sorobanStatus: escrowState?.milestones?.[activeMilestoneIndex]?.status,
+    });
+
     try {
       await onChainSubmitMilestone(activeMilestoneIndex);
 
@@ -101,15 +147,31 @@ export default function ContractDetailPage() {
       if (publicKey) trackMilestoneSubmitted(publicKey, contract.id, activeMilestoneIndex);
       toast.success("Work submitted for review!");
       window.dispatchEvent(new CustomEvent('open-feedback-modal', { detail: { action: 'submit_milestone' } }));
-    } catch {
-      toast.error("Failed to submit work. Please try again.");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to submit work. Please try again.");
     } finally {
+      submittingWorkRef.current = false;
       setIsSubmittingWork(false);
     }
   };
 
   const handleApproveMilestone = async () => {
-    if (!contract || activeMilestoneIndex === -1) return;
+    if (!contract || activeMilestoneIndex === -1 || approvingMilestoneRef.current) return;
+    approvingMilestoneRef.current = true;
+
+    console.log("=== PRE-APPROVAL DIAGNOSTIC LOG ===");
+    console.log("Connected Freighter wallet:", publicKey);
+    console.log("Transaction signer:", publicKey);
+    console.log("Client wallet from Firestore:", contract.clientWallet);
+    console.log("Freelancer wallet from Firestore:", contract.freelancerWallet);
+    console.log("Client stored inside Soroban contract:", escrowState?.client);
+    console.log("Freelancer stored inside Soroban contract:", escrowState?.freelancer);
+    console.log("Contract owner (admin stored inside Soroban):", escrowState?.admin);
+    console.log("Current milestone status:", activeMilestone?.status);
+    console.log("Current contract status:", contract.contractAddress ? "Funded" : "Unfunded");
+    console.log("Contract ID:", contract.id);
+    console.log("====================================");
+
     try {
       await approveMilestone(activeMilestoneIndex);
       if (publicKey) {
@@ -135,6 +197,9 @@ export default function ContractDetailPage() {
       await updateMilestoneStatus(contract.id, activeMilestoneIndex, "approved");
       router.refresh();
     } catch { /* toast already shown by hook */ }
+    finally {
+      approvingMilestoneRef.current = false;
+    }
   };
 
   const refreshContract = useCallback(async () => {
@@ -182,7 +247,8 @@ export default function ContractDetailPage() {
   }, [contract, resolveForm, onChainResolveDispute, publicKey]);
 
   const handleAcceptContract = async () => {
-    if (!contract) return;
+    if (!contract || acceptingContractRef.current) return;
+    acceptingContractRef.current = true;
     setIsAccepting(true);
     try {
       await updateContract(contract.id, { isAccepted: true });
@@ -200,13 +266,15 @@ export default function ContractDetailPage() {
       toast.error("Failed to accept contract.");
     } finally {
       setIsAccepting(false);
+      acceptingContractRef.current = false;
     }
   };
 
   const handleCancelContract = async () => {
-    if (!contract || !publicKey) return;
+    if (!contract || !publicKey || cancellingContractRef.current) return;
     if (!confirm("Are you sure you want to cancel this contract? This will refund the escrowed balance to your wallet.")) return;
 
+    cancellingContractRef.current = true;
     setIsCancelling(true);
     try {
       toast.loading("Refunding escrowed balance to your wallet...", { id: "cancel" });
@@ -221,6 +289,8 @@ export default function ContractDetailPage() {
     } catch (err) {
       toast.error("Failed to cancel contract.", { id: "cancel" });
       setIsCancelling(false);
+    } finally {
+      cancellingContractRef.current = false;
     }
   };
 
@@ -460,7 +530,22 @@ export default function ContractDetailPage() {
                 )
               ) : isClient ? (
                 <div className="space-y-6">
-                  {currentStatus === "pending" ? (
+                  {!contract.contractAddress ? (
+                    <div className="space-y-4">
+                      <div className="text-center p-6 border border-dashed border-accent/30 rounded-xl bg-accent-glow">
+                        <p className="font-ui-label text-xs text-accent uppercase tracking-wider mb-1 font-semibold">Contract Accepted</p>
+                        <p className="font-mono-data text-[10px] text-ink-secondary leading-normal">Ready to escrow funds on the Stellar network.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleFundEscrow}
+                        disabled={isEscrowLoading}
+                        className="neopop-button-teal w-full py-3.5 font-ui-label font-medium text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {isEscrowLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Fund Contract (Escrow)"}
+                      </button>
+                    </div>
+                  ) : currentStatus === "pending" ? (
                     <div className="text-center p-6 border border-dashed border-edge-neutral rounded-xl bg-bg-void/50">
                       <p className="font-ui-label text-xs text-ink-secondary uppercase tracking-wider font-semibold">Awaiting Submission</p>
                     </div>
@@ -484,17 +569,17 @@ export default function ContractDetailPage() {
                           <p className="text-[10px] font-mono-data text-ink-secondary leading-normal">This will lock all funds until resolved.</p>
                           <div className="flex gap-4 pt-2">
                             <button
-                              type="button"
-                              onClick={handleFlagDispute}
-                              disabled={isFlaggingDispute}
-                              className="flex-1 py-2 bg-status-disputed text-white font-ui-label rounded-xl font-semibold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
+                               type="button"
+                               onClick={handleFlagDispute}
+                               disabled={isFlaggingDispute}
+                               className="flex-1 py-2 bg-status-disputed text-white font-ui-label rounded-xl font-semibold text-xs uppercase tracking-wider disabled:opacity-50 cursor-pointer"
                             >
                               {isFlaggingDispute ? "Processing..." : "Flag"}
                             </button>
                             <button
-                              type="button"
-                              onClick={() => setIsDisputeFlowOpen(false)}
-                              className="flex-1 py-2 border border-edge-neutral text-ink-primary font-ui-label rounded-xl font-semibold text-xs uppercase tracking-wider hover:bg-bg-interactive cursor-pointer"
+                               type="button"
+                               onClick={() => setIsDisputeFlowOpen(false)}
+                               className="flex-1 py-2 border border-edge-neutral text-ink-primary font-ui-label rounded-xl font-semibold text-xs uppercase tracking-wider hover:bg-bg-interactive cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -524,7 +609,12 @@ export default function ContractDetailPage() {
                 </div>
               ) : isFreelancer ? (
                 <div className="space-y-6">
-                  {currentStatus === "pending" ? (
+                  {!contract.contractAddress ? (
+                    <div className="text-center p-6 border border-dashed border-edge-neutral rounded-xl bg-bg-void/50">
+                      <p className="font-ui-label text-xs text-ink-secondary uppercase tracking-wider font-semibold mb-1">Awaiting Funding</p>
+                      <p className="font-mono-data text-[10px] text-ink-tertiary font-medium">Waiting for the client to fund the escrow contract.</p>
+                    </div>
+                  ) : currentStatus === "pending" ? (
                     <form onSubmit={handleSubmitWork} className="space-y-4">
                       <input
                         type="url"

@@ -1,3 +1,14 @@
+import { db, serializeDate } from "@/lib/firebase";
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDocs, 
+  query, 
+  where,
+  limit as firestoreLimit
+} from "firebase/firestore";
+
 export interface SwapEvent {
   id: string;
   walletAddress: string;
@@ -12,38 +23,47 @@ export interface SwapEvent {
   errorMessage?: string;
 }
 
-const LOCAL_STORAGE_KEY = "trustlance_mock_swap_events";
-
-function getLocalEvents(): SwapEvent[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-  return stored ? (JSON.parse(stored) as SwapEvent[]) : [];
-}
-
-function saveLocalEvents(events: SwapEvent[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(events));
+// Helper to convert Firestore doc to SwapEvent type
+function docToSwapEvent(docSnap: any): SwapEvent {
+  const data = docSnap.data();
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: new Date(serializeDate(data.createdAt)),
+  } as SwapEvent;
 }
 
 export async function recordSwapEvent(
   data: Omit<SwapEvent, "id" | "createdAt">
 ): Promise<string> {
-  const newEvent: SwapEvent = {
+  const id = "swap_" + Math.random().toString(36).substring(2, 11);
+  const docRef = doc(db, "swap_events", id);
+  await setDoc(docRef, {
     ...data,
-    id: "local_" + Math.random().toString(36).substring(2, 11),
-    createdAt: new Date(),
-  };
-  const local = getLocalEvents();
-  saveLocalEvents([newEvent, ...local].slice(0, 50));
-  return newEvent.id;
+    id,
+    createdAt: new Date().toISOString(),
+  });
+  return id;
 }
 
 export async function getUserSwapEvents(
   walletAddress: string,
   limit = 10
 ): Promise<SwapEvent[]> {
-  return getLocalEvents()
-    .filter((e) => e.walletAddress === walletAddress)
-    .map((e) => ({ ...e, createdAt: new Date(e.createdAt) }))
-    .slice(0, limit);
+  try {
+    const q = query(
+      collection(db, "swap_events"),
+      where("walletAddress", "==", walletAddress),
+      firestoreLimit(limit)
+    );
+    const snap = await getDocs(q);
+    const events: SwapEvent[] = [];
+    snap.forEach((doc) => {
+      events.push(docToSwapEvent(doc));
+    });
+    return events.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  } catch (e) {
+    console.error("Firestore getUserSwapEvents failed:", e);
+    return [];
+  }
 }

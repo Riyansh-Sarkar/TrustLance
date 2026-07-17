@@ -3,7 +3,7 @@ import { getTransactionEvents } from "@/lib/firebase/growth";
 import { TransactionEvent } from "@/types/growth";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink, Activity, CheckCircle2, ShieldAlert, Rocket, ArrowRightLeft } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 
 export function ActivityFeed({ contractId }: { contractId: string }) {
   const [events, setEvents] = useState<TransactionEvent[]>([]);
@@ -73,7 +73,7 @@ export function ActivityFeed({ contractId }: { contractId: string }) {
           <div className="absolute left-[11px] top-2 bottom-2 w-px bg-edge-neutral z-0" />
           <AnimatePresence>
             {events.map((event, i) => (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
@@ -108,7 +108,7 @@ export function ActivityFeed({ contractId }: { contractId: string }) {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>

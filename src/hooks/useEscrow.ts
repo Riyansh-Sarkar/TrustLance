@@ -5,6 +5,7 @@ import { Client as EscrowClient, EscrowState, Networks } from "escrow";
 import { useWallet } from "./useWallet";
 import { submitSignedTransaction, prepareSorobanTx } from "@/lib/stellar/utils";
 import { STELLAR_CONFIG, getUSDCSACAddress } from "@/constants/stellar";
+import { getAccountBalance } from "@/lib/stellar/client";
 import { toast } from "sonner";
 
 export function usdcToStroops(amount: number): bigint {
@@ -14,6 +15,54 @@ export function usdcToStroops(amount: number): bigint {
   const [intPart, fracPart = ""] = amount.toString().split(".");
   const padded = fracPart.padEnd(7, "0").slice(0, 7);
   return BigInt(intPart + padded);
+}
+
+function cleanErrorMessage(err: unknown, defaultMsg: string): string {
+  if (!(err instanceof Error)) {
+    return defaultMsg;
+  }
+  const msg = err.message;
+  
+  // 1. Check for specific contract error codes first
+  if (msg.includes("Error(Contract, #1)") || msg.includes("AlreadyInitialized") || msg.includes("data:1") || msg.includes("data: 1")) {
+    return "Contract is already initialized and funded on-chain.";
+  }
+  if (msg.includes("Error(Contract, #2)") || msg.includes("NotInitialized") || msg.includes("data:2") || msg.includes("data: 2")) {
+    return "This contract has not been funded or initialized on-chain yet.";
+  }
+  if (msg.includes("Error(Contract, #3)") || msg.includes("NotDisputed") || msg.includes("data:3") || msg.includes("data: 3")) {
+    return "This contract is not currently in a disputed state.";
+  }
+  if (msg.includes("Error(Contract, #4)") || msg.includes("Unauthorized") || msg.includes("data:4") || msg.includes("data: 4")) {
+    return "You are not authorized to perform this action.";
+  }
+  if (msg.includes("Error(Contract, #5)") || msg.includes("InsufficientBalance") || msg.includes("data:5") || msg.includes("data: 5")) {
+    return "Insufficient balance in the escrow contract.";
+  }
+  if (msg.includes("Error(Contract, #6)") || msg.includes("InvalidMilestoneId") || msg.includes("data:6") || msg.includes("data: 6")) {
+    return "Invalid milestone ID.";
+  }
+  if (msg.includes("Error(Contract, #7)") || msg.includes("InvalidStatus") || msg.includes("data:7") || msg.includes("data: 7")) {
+    return "This milestone is in an invalid status for this action.";
+  }
+  if (msg.includes("Error(Contract, #8)") || msg.includes("NotAParty") || msg.includes("data:8") || msg.includes("data: 8")) {
+    return "You are not a client or freelancer for this contract.";
+  }
+
+  // 2. Check other known error patterns
+  if (msg.includes("resulting balance is not within the allowed range") || msg.includes("Error(Contract, #10)")) {
+    return "Insufficient USDC balance in your wallet to fund this contract.";
+  }
+  if (msg.includes("MissingValue") || msg.includes("non-existing value for contract instance")) {
+    return "Failed to communicate with contract instance. It may not be deployed or initialized.";
+  }
+  if (msg.includes("User denied signature") || msg.includes("denied by the user")) {
+    return "Transaction signature request was rejected in your wallet.";
+  }
+  if (msg.includes("InvalidAction") || msg.includes("WasmVm")) {
+    return "This action is invalid for the contract's current state.";
+  }
+  return msg;
 }
 
 export function useEscrow(projectId?: string, contractId?: string) {
@@ -49,7 +98,9 @@ export function useEscrow(projectId?: string, contractId?: string) {
         msg.includes("InvalidAction") ||
         msg.includes("WasmVm") ||
         msg.includes("UnreachableCodeReached") ||
-        msg.includes("get_state");
+        msg.includes("get_state") ||
+        msg.includes("Error(Contract, #2)") ||
+        msg.includes("NotInitialized");
 
       if (isUninitialized) {
         setState(null);
@@ -59,7 +110,7 @@ export function useEscrow(projectId?: string, contractId?: string) {
     } finally {
       setIsFetching(false);
     }
-  }, [client]);
+  }, [client, projectId]);
 
   useEffect(() => {
     if (isConnected && projectId) {
@@ -68,18 +119,23 @@ export function useEscrow(projectId?: string, contractId?: string) {
     }
   }, [isConnected, projectId, fetchState]);
 
-  const approveMilestone = useCallback(async (milestoneId: number) => {
+  const approveMilestone = useCallback(async (milestoneId: number, customProjectId?: string) => {
     if (!isConnected) {
       toast.error("Wallet not connected");
       throw new Error("Wallet not connected");
+    }
+    if (isFetching) {
+      toast.error("A transaction is already in progress.");
+      throw new Error("A transaction is already in progress.");
     }
     setIsFetching(true);
     setError(null);
     const toastId = toast.loading("Waiting for wallet signature...");
     
     try {
-      if (!projectId) throw new Error("Missing projectId");
-      const tx = await client.approve_milestone({ project_id: projectId, milestone_id: milestoneId });
+      const activeProjectId = customProjectId || projectId;
+      if (!activeProjectId) throw new Error("Missing projectId");
+      const tx = await client.approve_milestone({ project_id: activeProjectId, milestone_id: milestoneId });
 
       const unsigned = prepareSorobanTx(tx.built!.toXDR());
       const signedXdr = await sign((await unsigned).toString());
@@ -97,14 +153,14 @@ export function useEscrow(projectId?: string, contractId?: string) {
       await fetchState();
       return result;
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Failed to approve milestone";
+      const errMsg = cleanErrorMessage(err, "Failed to approve milestone");
       setError(errMsg);
       toast.error(`Transaction Failed: ${errMsg}`, { id: toastId });
-      throw err;
+      throw new Error(errMsg);
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, client, sign, fetchState]);
+  }, [isConnected, isFetching, client, sign, fetchState, projectId]);
 
   const fundContract = useCallback(async (
     projectId: string,
@@ -116,11 +172,31 @@ export function useEscrow(projectId?: string, contractId?: string) {
       toast.error("Wallet not connected");
       throw new Error("Wallet not connected");
     }
+    if (isFetching) {
+      toast.error("A transaction is already in progress.");
+      throw new Error("A transaction is already in progress.");
+    }
     setIsFetching(true);
     setError(null);
-    const toastId = toast.loading("Waiting for wallet signature...");
+    const toastId = toast.loading("Checking USDC balance...");
     
     try {
+      const totalAmount = amounts.reduce((sum, val) => sum + val, 0);
+      
+      const { balance: balanceStr, error: balanceError } = await getAccountBalance(publicKey!, "USDC");
+      if (balanceError) {
+        throw new Error(`Failed to load wallet balance: ${balanceError}`);
+      }
+
+      const balance = parseFloat(balanceStr);
+      if (balance < totalAmount) {
+        const missingAmount = totalAmount - balance;
+        const errMsg = `Insufficient USDC balance.\nContract Amount: ${totalAmount} USDC\nYour Balance: ${balance} USDC\nYou need ${missingAmount.toFixed(2)} more USDC to execute this contract.`;
+        toast.error(errMsg, { id: toastId, duration: 6000 });
+        throw new Error(errMsg);
+      }
+
+      toast.loading("Waiting for wallet signature...", { id: toastId });
       const amountsI128 = amounts.map(usdcToStroops);
 
       const tx = await client.initialize({
@@ -151,8 +227,8 @@ export function useEscrow(projectId?: string, contractId?: string) {
       
       return result;
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Failed to initialize escrow";
-      if (errMsg.includes("AlreadyInitialized") || errMsg.includes("data:1") || errMsg.includes("data: 1")) {
+      const errMsg = cleanErrorMessage(err, "Failed to initialize escrow");
+      if (errMsg.includes("already initialized") || errMsg.includes("AlreadyInitialized") || errMsg.includes("data:1") || errMsg.includes("data: 1")) {
         toast.dismiss(toastId);
         toast.success("Contract is already initialized on-chain. Syncing state...");
         await fetchState();
@@ -160,16 +236,20 @@ export function useEscrow(projectId?: string, contractId?: string) {
       }
       setError(errMsg);
       toast.error(`Transaction Failed: ${errMsg}`, { id: toastId });
-      throw err;
+      throw new Error(errMsg);
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, client, publicKey, sign, fetchState]);
+  }, [isConnected, isFetching, client, publicKey, sign, fetchState]);
 
-  const submitMilestone = useCallback(async (milestoneId: number) => {
+  const submitMilestone = useCallback(async (milestoneId: number, customProjectId?: string) => {
     if (!isConnected) {
       toast.error("Wallet not connected");
       throw new Error("Wallet not connected");
+    }
+    if (isFetching) {
+      toast.error("A transaction is already in progress.");
+      throw new Error("A transaction is already in progress.");
     }
     setIsFetching(true);
     setError(null);
@@ -192,12 +272,28 @@ export function useEscrow(projectId?: string, contractId?: string) {
         tag = tag.toLowerCase();
 
         if (tag !== "pending") {
-          throw new Error(`This milestone is not in a submittable state. Current state: ${tag}`);
+          throw new Error(`This milestone has already been submitted and is awaiting client approval.`);
         }
       }
 
-      if (!projectId) throw new Error("Missing projectId");
-      const tx = await client.submit_milestone({ project_id: projectId, milestone_id: milestoneId });
+      const activeProjectId = customProjectId || projectId;
+      if (!activeProjectId) throw new Error("Missing projectId");
+
+      console.log("[debug] submitMilestone invocation details:", {
+        contractId: resolvedContractId,
+        projectId: activeProjectId,
+        milestoneIndex: milestoneId,
+        walletAddress: publicKey,
+        stateLoaded: !!state,
+        onChainMilestones: state?.milestones ? JSON.stringify(state.milestones, (key, value) =>
+          typeof value === "bigint" ? value.toString() : value
+        ) : "null",
+        onChainEscrowInitialized: state?.initialized,
+        onChainEscrowClosed: state?.is_closed,
+        onChainEscrowDisputed: state?.is_disputed,
+      });
+
+      const tx = await client.submit_milestone({ project_id: activeProjectId, milestone_id: milestoneId });
 
       const preparedXdr = await prepareSorobanTx(tx.built!.toXDR());
       const signedXdr = await sign(preparedXdr);
@@ -216,26 +312,31 @@ export function useEscrow(projectId?: string, contractId?: string) {
       return result;
     } catch (err: unknown) {
       console.error("submitMilestone error:", err);
-      const errMsg = err instanceof Error ? err.message : "Failed to submit milestone";
+      const errMsg = cleanErrorMessage(err, "Failed to submit milestone");
       setError(errMsg);
       toast.error(`Transaction Failed: ${errMsg}`, { id: toastId });
-      throw err;
+      throw new Error(errMsg);
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, client, state, sign, fetchState]);
+  }, [isConnected, isFetching, client, state, sign, fetchState, projectId]);
 
-  const flagDispute = useCallback(async () => {
+  const flagDispute = useCallback(async (customProjectId?: string) => {
     if (!isConnected || !publicKey) {
       toast.error("Wallet not connected");
       throw new Error("Wallet not connected");
+    }
+    if (isFetching) {
+      toast.error("A transaction is already in progress.");
+      throw new Error("A transaction is already in progress.");
     }
     setIsFetching(true);
     setError(null);
     const toastId = toast.loading("Waiting for wallet signature...");
     try {
-      if (!projectId) throw new Error("Missing projectId");
-      const tx = await client.flag_dispute({ project_id: projectId, caller: publicKey });
+      const activeProjectId = customProjectId || projectId;
+      if (!activeProjectId) throw new Error("Missing projectId");
+      const tx = await client.flag_dispute({ project_id: activeProjectId, caller: publicKey });
       const preparedXdr = await prepareSorobanTx(tx.built!.toXDR());
       const signedXdr = await sign(preparedXdr);
       toast.loading("Submitting dispute to Soroban...", { id: toastId });
@@ -250,37 +351,38 @@ export function useEscrow(projectId?: string, contractId?: string) {
       await fetchState();
       return result;
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Failed to flag dispute";
+      const errMsg = cleanErrorMessage(err, "Failed to flag dispute");
       setError(errMsg);
       toast.error(`Transaction Failed: ${errMsg}`, { id: toastId });
-      throw err;
+      throw new Error(errMsg);
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, client, publicKey, sign, fetchState]);
+  }, [isConnected, isFetching, client, publicKey, sign, fetchState, projectId]);
 
   const resolveDispute = useCallback(async (
     resolver: string,
     releaseTo: string,
-    amount: number
+    amount: number,
+    customProjectId?: string
   ) => {
-    // The Rust contract gates resolve_dispute on `if resolver != state.admin`
-    // (contracts/escrow/src/lib.rs:207). Today the only admin is the client
-    // (initialize pins admin == client), so callers should pass the on-chain
-    // admin rather than any arbitrary wallet. When a real admin role is
-    // added, surface it from state.admin and pass that here.
     if (!isConnected) {
       toast.error("Wallet not connected");
       throw new Error("Wallet not connected");
+    }
+    if (isFetching) {
+      toast.error("A transaction is already in progress.");
+      throw new Error("A transaction is already in progress.");
     }
     setIsFetching(true);
     setError(null);
     const toastId = toast.loading("Waiting for wallet signature...");
     try {
-      if (!projectId) throw new Error("Missing projectId");
+      const activeProjectId = customProjectId || projectId;
+      if (!activeProjectId) throw new Error("Missing projectId");
       const amountI128 = usdcToStroops(amount);
       const tx = await client.resolve_dispute({
-        project_id: projectId,
+        project_id: activeProjectId,
         resolver,
         release_to: releaseTo,
         amount: amountI128,
@@ -299,26 +401,31 @@ export function useEscrow(projectId?: string, contractId?: string) {
       await fetchState();
       return result;
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Failed to resolve dispute";
+      const errMsg = cleanErrorMessage(err, "Failed to resolve dispute");
       setError(errMsg);
       toast.error(`Transaction Failed: ${errMsg}`, { id: toastId });
-      throw err;
+      throw new Error(errMsg);
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, client, sign, fetchState]);
+  }, [isConnected, isFetching, client, sign, fetchState, projectId]);
 
-  const cancelContract = useCallback(async () => {
+  const cancelContract = useCallback(async (customProjectId?: string) => {
     if (!isConnected || !publicKey) {
       toast.error("Wallet not connected");
       throw new Error("Wallet not connected");
+    }
+    if (isFetching) {
+      toast.error("A transaction is already in progress.");
+      throw new Error("A transaction is already in progress.");
     }
     setIsFetching(true);
     setError(null);
     const toastId = toast.loading("Waiting for wallet signature...");
     try {
-      if (!projectId) throw new Error("Missing projectId");
-      const tx = await client.cancel_contract({ project_id: projectId });
+      const activeProjectId = customProjectId || projectId;
+      if (!activeProjectId) throw new Error("Missing projectId");
+      const tx = await client.cancel_contract({ project_id: activeProjectId });
       const preparedXdr = await prepareSorobanTx(tx.built!.toXDR());
       const signedXdr = await sign(preparedXdr);
       toast.loading("Submitting cancellation to Soroban...", { id: toastId });
@@ -333,20 +440,20 @@ export function useEscrow(projectId?: string, contractId?: string) {
       await fetchState();
       return result;
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Failed to cancel contract";
+      const errMsg = cleanErrorMessage(err, "Failed to cancel contract");
       setError(errMsg);
       toast.error(`Transaction Failed: ${errMsg}`, { id: toastId });
-      throw err;
+      throw new Error(errMsg);
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, client, publicKey, sign, fetchState]);
+  }, [isConnected, isFetching, client, publicKey, sign, fetchState, projectId]);
 
   return {
     state,
     isLoading: isFetching,
     error,
-    refresh:    fetchState,
+    refresh: fetchState,
     fundContract,
     submitMilestone,
     approveMilestone,

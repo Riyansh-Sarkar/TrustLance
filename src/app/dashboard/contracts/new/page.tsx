@@ -67,22 +67,13 @@ function NewContractForm() {
       const { generateContractId } = await import("@/lib/firebase/contracts");
       const projectId = generateContractId();
 
-      const result = await fundContract(
-        projectId,
-        formData.freelancerAddress,
-        milestoneAmounts,
-        milestoneDescriptions
-      );
-
-      const txHash = (result as { hash?: string })?.hash || "pending";
-
       await createContract({
         clientWallet: publicKey,
         freelancerWallet: formData.freelancerAddress,
         title: formData.title,
         description: formData.description,
         totalAmount,
-        contractAddress: txHash,
+        contractAddress: "",
         isDisputed: false,
         isClosed: false,
         isAccepted: false,

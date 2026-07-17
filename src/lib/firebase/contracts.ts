@@ -1,28 +1,27 @@
 import type { Contract, MilestoneStatus } from "@/types";
+import { db, serializeDate } from "@/lib/firebase";
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  getDocs, 
+  query, 
+  where, 
+  or,
+  updateDoc, 
+  deleteDoc
+} from "firebase/firestore";
 
-const LOCAL_STORAGE_KEY = "trustlance_mock_contracts";
-const LOCAL_STORAGE_FEEDBACK_KEY = "trustlance_mock_feedback";
-
-function getLocalContracts(): Contract[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : [];
-}
-
-function saveLocalContracts(contracts: Contract[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(contracts));
-}
-
-function getLocalFeedback(): any[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(LOCAL_STORAGE_FEEDBACK_KEY);
-  return stored ? JSON.parse(stored) : [];
-}
-
-function saveLocalFeedback(feedback: any[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LOCAL_STORAGE_FEEDBACK_KEY, JSON.stringify(feedback));
+// Helper to convert Firestore doc to Contract type
+function docToContract(docSnap: any): Contract {
+  const data = docSnap.data();
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: new Date(serializeDate(data.createdAt)),
+    updatedAt: new Date(serializeDate(data.updatedAt)),
+  } as Contract;
 }
 
 export function generateContractId(): string {
@@ -34,26 +33,27 @@ export async function createContract(
   customId?: string
 ): Promise<string> {
   const mockId = customId || generateContractId();
-  const newContract: Contract = {
+  const docRef = doc(db, "contracts", mockId);
+  await setDoc(docRef, {
     ...data,
     id: mockId,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  const local = getLocalContracts();
-  saveLocalContracts([...local, newContract]);
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
   return mockId;
 }
 
 export async function getContract(id: string): Promise<Contract | null> {
-  const local = getLocalContracts();
-  const c = local.find(c => c.id === id);
-  if (!c) return null;
-  return {
-    ...c,
-    createdAt: new Date(c.createdAt),
-    updatedAt: new Date(c.updatedAt),
-  };
+  try {
+    const docRef = doc(db, "contracts", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docToContract(docSnap);
+    }
+  } catch (e) {
+    console.error("Firestore getContract failed:", e);
+  }
+  return null;
 }
 
 function getTimestampMs(value: unknown): number {
@@ -70,17 +70,26 @@ function getTimestampMs(value: unknown): number {
 export async function getUserContracts(
   walletAddress: string
 ): Promise<Contract[]> {
-  const local = getLocalContracts();
-  return local
-    .filter(c => c.clientWallet === walletAddress || c.freelancerWallet === walletAddress)
-    .map(c => ({
-      ...c,
-      createdAt: new Date(c.createdAt),
-      updatedAt: new Date(c.updatedAt),
-    }))
-    .sort((a, b) => {
+  try {
+    const q = query(
+      collection(db, "contracts"),
+      or(
+        where("clientWallet", "==", walletAddress),
+        where("freelancerWallet", "==", walletAddress)
+      )
+    );
+    const snap = await getDocs(q);
+    const contracts: Contract[] = [];
+    snap.forEach((doc) => {
+      contracts.push(docToContract(doc));
+    });
+    return contracts.sort((a, b) => {
       return getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt);
     });
+  } catch (e) {
+    console.error("Firestore getUserContracts failed:", e);
+    return [];
+  }
 }
 
 export async function updateMilestoneStatus(
@@ -89,44 +98,42 @@ export async function updateMilestoneStatus(
   status: MilestoneStatus,
   deliverableUrl?: string
 ) {
-  let local = getLocalContracts();
-  local = local.map(c => {
-    if (c.id === contractId) {
-      const updatedMilestones = [...c.milestones];
-      updatedMilestones[milestoneId] = {
-        ...updatedMilestones[milestoneId],
-        status,
-        ...(deliverableUrl ? { deliverableUrl } : {})
-      };
-      const isClosed = updatedMilestones.every(m => m.status === "approved" || m.status === "released");
-      return { 
-        ...c, 
-        milestones: updatedMilestones, 
-        ...(isClosed ? { isClosed: true } : {}),
-        updatedAt: new Date() 
-      };
-    }
-    return c;
-  });
-  saveLocalContracts(local);
+  try {
+    const c = await getContract(contractId);
+    if (!c) return;
+
+    const updatedMilestones = [...c.milestones];
+    updatedMilestones[milestoneId] = {
+      ...updatedMilestones[milestoneId],
+      status,
+      ...(deliverableUrl ? { deliverableUrl } : {})
+    };
+
+    const isClosed = updatedMilestones.every(m => m.status === "approved" || m.status === "released");
+    const docRef = doc(db, "contracts", contractId);
+    await updateDoc(docRef, {
+      milestones: updatedMilestones,
+      ...(isClosed ? { isClosed: true } : {}),
+      updatedAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Firestore updateMilestoneStatus failed:", e);
+  }
 }
 
 export async function updateContract(
   contractId: string,
   updates: Partial<Contract>
 ) {
-  let local = getLocalContracts();
-  local = local.map(c => {
-    if (c.id === contractId) {
-      return { 
-        ...c, 
-        ...updates,
-        updatedAt: new Date() 
-      } as Contract;
-    }
-    return c;
-  });
-  saveLocalContracts(local);
+  try {
+    const docRef = doc(db, "contracts", contractId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Firestore updateContract failed:", e);
+  }
 }
 
 export async function saveFeedback(contractId: string, feedback: {
@@ -134,34 +141,49 @@ export async function saveFeedback(contractId: string, feedback: {
   comment: string;
   walletAddress: string;
 }) {
-  const local = getLocalFeedback();
-  const newFeedback = {
-    id: "feedback_" + Math.random().toString(36).substring(2, 11),
-    contractId,
-    ...feedback,
-    createdAt: new Date()
-  };
-  saveLocalFeedback([...local, newFeedback]);
+  try {
+    const feedbackId = "feedback_" + Math.random().toString(36).substring(2, 11);
+    const docRef = doc(db, "feedbacks", feedbackId);
+    await setDoc(docRef, {
+      id: feedbackId,
+      contractId,
+      ...feedback,
+      createdAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Firestore saveFeedback failed:", e);
+  }
 }
 
 export async function flagDispute(contractId: string) {
-  const local = getLocalContracts();
-  const updated = local.map(c =>
-    c.id === contractId
-      ? { ...c, isDisputed: true, updatedAt: new Date() }
-      : c
-  );
-  saveLocalContracts(updated);
+  try {
+    const docRef = doc(db, "contracts", contractId);
+    await updateDoc(docRef, {
+      isDisputed: true,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Firestore flagDispute failed:", e);
+  }
 }
 
 export async function deleteContract(contractId: string) {
-  let local = getLocalContracts();
-  local = local.filter(c => c.id !== contractId);
-  saveLocalContracts(local);
+  try {
+    const docRef = doc(db, "contracts", contractId);
+    await deleteDoc(docRef);
+  } catch (e) {
+    console.error("Firestore deleteContract failed:", e);
+  }
 }
 
 export async function acceptContract(contractId: string) {
-  let local = getLocalContracts();
-  local = local.map(c => c.id === contractId ? { ...c, isAccepted: true, updatedAt: new Date() } : c);
-  saveLocalContracts(local);
+  try {
+    const docRef = doc(db, "contracts", contractId);
+    await updateDoc(docRef, {
+      isAccepted: true,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error("Firestore acceptContract failed:", e);
+  }
 }

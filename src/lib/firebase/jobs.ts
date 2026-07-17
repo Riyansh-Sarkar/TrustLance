@@ -1,110 +1,158 @@
 import type { Job, JobApplication } from "@/types";
+import { db, serializeDate } from "@/lib/firebase";
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  getDocs, 
+  query, 
+  where, 
+  updateDoc, 
+  deleteDoc
+} from "firebase/firestore";
 
-const LOCAL_STORAGE_JOBS_KEY = "trustlance_mock_jobs";
-const LOCAL_STORAGE_APPS_KEY = "trustlance_mock_apps";
-
-function getLocalJobs(): Job[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(LOCAL_STORAGE_JOBS_KEY);
-  return stored ? JSON.parse(stored) : [];
+// Helper to convert Firestore doc to Job type
+function docToJob(docSnap: any): Job {
+  const data = docSnap.data();
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: new Date(serializeDate(data.createdAt)),
+    updatedAt: new Date(serializeDate(data.updatedAt)),
+  } as Job;
 }
 
-function saveLocalJobs(jobs: Job[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LOCAL_STORAGE_JOBS_KEY, JSON.stringify(jobs));
-}
-
-function getLocalApps(): JobApplication[] {
-  if (typeof window === "undefined") return [];
-  const stored = localStorage.getItem(LOCAL_STORAGE_APPS_KEY);
-  return stored ? JSON.parse(stored) : [];
-}
-
-function saveLocalApps(apps: JobApplication[]) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(LOCAL_STORAGE_APPS_KEY, JSON.stringify(apps));
+// Helper to convert Firestore doc to JobApplication type
+function docToApp(docSnap: any): JobApplication {
+  const data = docSnap.data();
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: new Date(serializeDate(data.createdAt)),
+    updatedAt: new Date(serializeDate(data.updatedAt)),
+  } as JobApplication;
 }
 
 export async function createJob(
   data: Omit<Job, "id" | "createdAt" | "updatedAt">
 ): Promise<string> {
-  const mockId = "job_" + Math.random().toString(36).substring(2, 11);
-  const newJob: Job = {
+  const jobId = "job_" + Math.random().toString(36).substring(2, 11);
+  const docRef = doc(db, "jobs", jobId);
+  await setDoc(docRef, {
     ...data,
-    id: mockId,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  const local = getLocalJobs();
-  saveLocalJobs([...local, newJob]);
-  return mockId;
+    id: jobId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  return jobId;
 }
 
 export async function getJobs(): Promise<Job[]> {
-  return getLocalJobs()
-    .filter((j) => j.status === "open")
-    .map((j) => ({ ...j, createdAt: new Date(j.createdAt), updatedAt: new Date(j.updatedAt) }))
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  try {
+    const q = query(collection(db, "jobs"), where("status", "==", "open"));
+    const snap = await getDocs(q);
+    const jobs: Job[] = [];
+    snap.forEach((doc) => {
+      jobs.push(docToJob(doc));
+    });
+    return jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  } catch (e) {
+    console.error("Firestore getJobs failed:", e);
+    return [];
+  }
 }
 
 export async function getMyJobs(clientId: string): Promise<Job[]> {
-  return getLocalJobs()
-    .filter((j) => j.clientId === clientId)
-    .map((j) => ({ ...j, createdAt: new Date(j.createdAt), updatedAt: new Date(j.updatedAt) }))
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  try {
+    const q = query(collection(db, "jobs"), where("clientId", "==", clientId));
+    const snap = await getDocs(q);
+    const jobs: Job[] = [];
+    snap.forEach((doc) => {
+      jobs.push(docToJob(doc));
+    });
+    return jobs.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  } catch (e) {
+    console.error("Firestore getMyJobs failed:", e);
+    return [];
+  }
 }
 
 export async function getJob(id: string): Promise<Job | null> {
-  const job = getLocalJobs().find((j) => j.id === id);
-  if (!job) return null;
-  return {
-    ...job,
-    createdAt: new Date(job.createdAt),
-    updatedAt: new Date(job.updatedAt),
-  };
+  try {
+    const docRef = doc(db, "jobs", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docToJob(docSnap);
+    }
+  } catch (e) {
+    console.error("Firestore getJob failed:", e);
+  }
+  return null;
 }
 
 export async function updateJobStatus(id: string, status: "open" | "closed") {
-  const local = getLocalJobs();
-  saveLocalJobs(
-    local.map((j) => (j.id === id ? { ...j, status, updatedAt: new Date() } : j))
-  );
+  try {
+    const docRef = doc(db, "jobs", id);
+    await updateDoc(docRef, {
+      status,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error("Firestore updateJobStatus failed:", e);
+  }
 }
 
 export async function deleteJob(id: string) {
-  const local = getLocalJobs();
-  saveLocalJobs(local.filter((j) => j.id !== id));
+  try {
+    const docRef = doc(db, "jobs", id);
+    await deleteDoc(docRef);
+  } catch (e) {
+    console.error("Firestore deleteJob failed:", e);
+  }
 }
 
 export async function applyToJob(
   data: Omit<JobApplication, "id" | "status" | "createdAt" | "updatedAt">
 ): Promise<string> {
-  const mockId = "app_" + Math.random().toString(36).substring(2, 11);
-  const newApp: JobApplication = {
+  const appId = "app_" + Math.random().toString(36).substring(2, 11);
+  const docRef = doc(db, "applications", appId);
+  await setDoc(docRef, {
     ...data,
-    id: mockId,
+    id: appId,
     status: "pending",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  const local = getLocalApps();
-  saveLocalApps([...local, newApp]);
-  return mockId;
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+  return appId;
 }
 
 export async function getJobApplications(jobId: string): Promise<JobApplication[]> {
-  return getLocalApps()
-    .filter((a) => a.jobId === jobId)
-    .map((a) => ({ ...a, createdAt: new Date(a.createdAt), updatedAt: new Date(a.updatedAt) }))
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  try {
+    const q = query(collection(db, "applications"), where("jobId", "==", jobId));
+    const snap = await getDocs(q);
+    const apps: JobApplication[] = [];
+    snap.forEach((doc) => {
+      apps.push(docToApp(doc));
+    });
+    return apps.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  } catch (e) {
+    console.error("Firestore getJobApplications failed:", e);
+    return [];
+  }
 }
 
 export async function updateApplicationStatus(
   id: string,
   status: "pending" | "accepted" | "rejected"
 ) {
-  const local = getLocalApps();
-  saveLocalApps(
-    local.map((a) => (a.id === id ? { ...a, status, updatedAt: new Date() } : a))
-  );
+  try {
+    const docRef = doc(db, "applications", id);
+    await updateDoc(docRef, {
+      status,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error("Firestore updateApplicationStatus failed:", e);
+  }
 }

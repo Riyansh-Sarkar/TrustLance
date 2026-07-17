@@ -99,13 +99,31 @@ export default function AuthWizard() {
     const success = await connectWallet(id);
     if (success) {
       const address = localStorage.getItem("fp_wallet_address");
-      const hasProfile = address ? !!localStorage.getItem(`fp_profile_${address}`) : false;
-      
-      setDirection(1);
-      if (hasProfile) {
-        setStep(4);
-      } else {
-        setStep(2);
+      if (address) {
+        let hasProfile = !!localStorage.getItem(`fp_profile_${address}`);
+        if (!hasProfile) {
+          try {
+            const { getProfile } = await import("@/lib/firebase");
+            const remoteProfile = await getProfile(address);
+            hasProfile = !!remoteProfile;
+            if (remoteProfile) {
+              localStorage.setItem(`fp_profile_${address}`, JSON.stringify(remoteProfile));
+            }
+          } catch (e) {
+            console.error("Failed to check profile in Firestore:", e);
+          }
+        }
+
+        import("@/lib/firebase").then(({ migrateLocalStorageToFirestore }) => {
+          migrateLocalStorageToFirestore(address).catch((e) => console.error("Migration failed:", e));
+        });
+
+        setDirection(1);
+        if (hasProfile) {
+          setStep(4);
+        } else {
+          setStep(2);
+        }
       }
     }
   };
@@ -124,6 +142,9 @@ export default function AuthWizard() {
     updateProfile({ username: name, pfpUrl: "" });
     if (typeof window !== "undefined" && publicKey) {
       localStorage.setItem(`fp_prefs_${publicKey}`, JSON.stringify({ role, email }));
+      import("@/lib/firebase").then(({ updatePreferences }) => {
+        updatePreferences(publicKey, { role, email });
+      });
     }
 
     setDirection(1);

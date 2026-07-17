@@ -328,13 +328,24 @@ export default function DashboardPage() {
     return items.slice(0, 4);
   }, [contracts, swapEvents]);
 
-  const handleFundContract = useCallback((c: Contract) => {
-    fundContract(
-      c.id,
-      c.freelancerWallet,
-      [c.totalAmount],
-      [c.description || "Milestone"]
-    );
+  const handleFundContract = useCallback(async (c: Contract) => {
+    try {
+      const result = await fundContract(
+        c.id,
+        c.freelancerWallet,
+        [c.totalAmount],
+        [c.description || "Milestone"]
+      );
+      const txHash = (result as { hash?: string })?.hash || "pending";
+      const { updateContract } = await import("@/lib/firebase/contracts");
+      await updateContract(c.id, { contractAddress: txHash });
+      setState(prev => ({
+        ...prev,
+        contracts: prev.contracts.map(item => item.id === c.id ? { ...item, contractAddress: txHash } : item)
+      }));
+    } catch (err) {
+      console.error("Dashboard fundContract error:", err);
+    }
   }, [fundContract]);
 
   const contractCompletionPct = useMemo(() => {
@@ -401,7 +412,6 @@ export default function DashboardPage() {
               isConnected={isConnected} 
               router={router} 
               onFundContract={handleFundContract}
-              onCompleteWork={submitMilestone}
             />
             <UpcomingMilestones contracts={contracts} isFetching={isFetching} />
           </div>

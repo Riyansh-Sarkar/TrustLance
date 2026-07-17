@@ -42,6 +42,24 @@ export default function AccountPage() {
           console.error("Failed to parse preferences", e);
         }
       }
+
+      let active = true;
+      import("@/lib/firebase").then(({ getPreferences }) => {
+        getPreferences(publicKey).then((prefs) => {
+          if (active && prefs) {
+            if (prefs.currency) setCurrency(prefs.currency);
+            if (prefs.notifications !== undefined) setNotifications(prefs.notifications);
+            localStorage.setItem(`fp_prefs_${publicKey}`, JSON.stringify({
+              ...JSON.parse(localStorage.getItem(`fp_prefs_${publicKey}`) || "{}"),
+              ...prefs
+            }));
+          }
+        }).catch(err => console.error("Firestore getPreferences failed:", err));
+      });
+
+      return () => {
+        active = false;
+      };
     }
   }, [publicKey]);
 
@@ -147,6 +165,9 @@ export default function AccountPage() {
                       setCurrency(newCurrency);
                       if (typeof window !== "undefined" && publicKey) {
                         localStorage.setItem(`fp_prefs_${publicKey}`, JSON.stringify({ currency: newCurrency, notifications }));
+                        import("@/lib/firebase").then(({ updatePreferences }) => {
+                          updatePreferences(publicKey, { currency: newCurrency });
+                        });
                       }
                     }}
                     className="bg-bg-base border border-edge-neutral rounded-xl px-4 py-2.5 text-xs font-mono-data font-semibold focus:ring-2 focus:ring-accent-glow focus:border-accent outline-none transition-all cursor-pointer text-ink-primary shadow-sm"
@@ -177,6 +198,9 @@ export default function AccountPage() {
                       setNotifications(newNotifications);
                       if (typeof window !== "undefined" && publicKey) {
                         localStorage.setItem(`fp_prefs_${publicKey}`, JSON.stringify({ currency, notifications: newNotifications }));
+                        import("@/lib/firebase").then(({ updatePreferences }) => {
+                          updatePreferences(publicKey, { notifications: newNotifications });
+                        });
                       }
                     }}
                     className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors cursor-pointer border border-transparent ${notifications ? 'bg-accent' : 'bg-bg-interactive border-edge-neutral'}`}

@@ -160,17 +160,16 @@ interface ContractsActionListProps {
   isConnected: boolean;
   router: AppRouterInstance;
   onFundContract: (contract: Contract) => void;
-  onCompleteWork: (milestoneId: number) => void;
 }
 
-export function ContractsActionList({ contracts, isFetching, publicKey, isLoading, isConnected, router, onFundContract, onCompleteWork }: ContractsActionListProps) {
+export function ContractsActionList({ contracts, isFetching, publicKey, isLoading, isConnected, router, onFundContract }: ContractsActionListProps) {
   return (
     <section className="px-4 md:px-margin-desktop mb-section-gap">
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-ui-label text-sm uppercase tracking-widest text-ink-primary font-bold">Requires your attention</h3>
         <button type="button" className="text-accent font-mono-data text-xs uppercase tracking-wider hover:underline underline-offset-2 transition-all">View all</button>
       </div>
-           <m.div variants={stagger.container} initial="initial" animate="animate" className="space-y-4">
+      <m.div variants={stagger.container} initial="initial" animate="animate" className="space-y-4">
         {contracts.length === 0 && !isFetching && (
           <div className="text-center py-12 border border-edge-neutral border-dashed rounded-[20px] bg-bg-base">
             <div className="w-10 h-10 bg-bg-interactive rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -178,7 +177,7 @@ export function ContractsActionList({ contracts, isFetching, publicKey, isLoadin
             </div>
             <h3 className="font-ui-label text-base font-medium text-ink-primary mb-1">No Active Contracts</h3>
             <p className="text-sm text-ink-secondary mb-6 max-w-[250px] mx-auto">Create a contract to safely escrow funds.</p>
-            <button 
+            <button
               type="button"
               onClick={() => router.push('/dashboard/contracts/new')}
               className="neopop-button-teal px-4 py-2 font-ui-label text-sm font-medium flex items-center justify-center gap-2 mx-auto"
@@ -190,79 +189,96 @@ export function ContractsActionList({ contracts, isFetching, publicKey, isLoadin
         {contracts.slice(0, 3).map((c) => {
           const isClient = c.clientWallet === publicKey;
           const counterparty = isClient ? c.freelancerWallet : c.clientWallet;
-          
+
           let actionLabel = "";
           let actionTooltip = "";
           let actionAction: (() => void) | null = null;
 
-          const firstActionableMilestone = (c.milestones || []).find(m => {
+          const firstActionableMilestoneIndex = (c.milestones || []).findIndex(m => {
             if (isClient) return m.status === "pending" || m.status === "submitted";
             return m.status === "pending";
           });
+          const firstActionableMilestone = firstActionableMilestoneIndex !== -1 ? c.milestones[firstActionableMilestoneIndex] : null;
 
           if (firstActionableMilestone) {
             if (isClient) {
-              if (firstActionableMilestone.status === "pending") {
-                actionLabel = "Fund Contract";
-                actionTooltip = "Securely lock funds in the smart contract.";
-                actionAction = () => onFundContract(c);
+              if (!c.contractAddress) {
+                if (c.isAccepted) {
+                  actionLabel = "Fund Contract";
+                  actionTooltip = "Securely lock funds in the smart contract.";
+                  actionAction = () => onFundContract(c);
+                } else {
+                  actionLabel = "Awaiting Acceptance";
+                  actionTooltip = "Freelancer has not accepted this contract yet.";
+                  actionAction = null;
+                }
               } else if (firstActionableMilestone.status === "submitted") {
                 actionLabel = "Review Work";
                 actionTooltip = "Review the submitted work and release funds.";
                 actionAction = () => router.push(`/dashboard/contracts/${c.id}`);
               }
             } else {
-              if (firstActionableMilestone.status === "pending") {
+              if (!c.contractAddress) {
+                if (!c.isAccepted) {
+                  actionLabel = "Accept Contract";
+                  actionTooltip = "Review terms and accept the contract offer.";
+                  actionAction = () => router.push(`/dashboard/contracts/${c.id}`);
+                } else {
+                  actionLabel = "Awaiting Funding";
+                  actionTooltip = "Waiting for client to fund the escrow.";
+                  actionAction = null;
+                }
+              } else if (firstActionableMilestone.status === "pending") {
                 actionLabel = "Complete Work";
                 actionTooltip = "Submit your work for review.";
-                actionAction = () => onCompleteWork(Number(firstActionableMilestone.id));
+                actionAction = () => router.push(`/dashboard/contracts/${c.id}`);
               }
             }
           }
-          
+
           const isActiveRow = actionLabel !== "";
 
           return (
-          <m.div
-            key={c.id}
-            variants={stagger.item}
-            onClick={(e) => {
-              if ((e.target as HTMLElement).closest('button')) return;
-              router.push(`/dashboard/contracts/${c.id}`);
-            }}
-            className={`group p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all cursor-pointer border rounded-[20px] shadow-sm ${isActiveRow ? 'bg-accent-glow border-accent/40 hover:bg-accent-glow/70' : 'bg-bg-base border-edge-neutral hover:bg-bg-overlay'}`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isActiveRow ? 'bg-accent/15 text-accent' : 'bg-bg-interactive text-ink-secondary'}`}>
-                <Code className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="font-ui-label font-semibold text-ink-primary mb-1 text-sm">{c.title}</h4>
-                <p className="text-ink-tertiary text-xs font-mono-data uppercase tracking-wider truncate max-w-[200px] sm:max-w-[250px]">
-                  With: <span className="text-ink-secondary font-medium">{counterparty.substring(0, 8)}...</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-6">
-              {c.totalAmount > 0 && (
-                <div className="text-right hidden sm:block">
-                  <p className="text-[10px] text-ink-tertiary font-mono-data uppercase tracking-widest mb-0.5 font-medium">Value</p>
-                  <p className="font-mono-data text-sm font-semibold text-ink-primary">{c.totalAmount} USDC</p>
+            <m.div
+              key={c.id}
+              variants={stagger.item}
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('button')) return;
+                router.push(`/dashboard/contracts/${c.id}`);
+              }}
+              className={`group p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all cursor-pointer border rounded-[20px] shadow-sm ${isActiveRow ? 'bg-accent-glow border-accent/40 hover:bg-accent-glow/70' : 'bg-bg-base border-edge-neutral hover:bg-bg-overlay'}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isActiveRow ? 'bg-accent/15 text-accent' : 'bg-bg-interactive text-ink-secondary'}`}>
+                  <Code className="w-4 h-4" />
                 </div>
-              )}
-              {actionLabel && actionAction && (
-                <button
-                  type="button"
-                  onClick={actionAction}
-                  disabled={isLoading || !isConnected}
-                  title={actionTooltip}
-                  className="neopop-button-teal px-4 py-2 font-ui-label text-xs font-medium disabled:opacity-50 flex items-center gap-2 shrink-0"
-                >
-                  {isLoading ? "Processing..." : actionLabel}
-                </button>
-              )}
-            </div>
-          </m.div>
+                <div>
+                  <h4 className="font-ui-label font-semibold text-ink-primary mb-1 text-sm">{c.title}</h4>
+                  <p className="text-ink-tertiary text-xs font-mono-data uppercase tracking-wider truncate max-w-[200px] sm:max-w-[250px]">
+                    With: <span className="text-ink-secondary font-medium">{counterparty.substring(0, 8)}...</span>
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6">
+                {c.totalAmount > 0 && (
+                  <div className="text-right hidden sm:block">
+                    <p className="text-[10px] text-ink-tertiary font-mono-data uppercase tracking-widest mb-0.5 font-medium">Value</p>
+                    <p className="font-mono-data text-sm font-semibold text-ink-primary">{c.totalAmount} USDC</p>
+                  </div>
+                )}
+                {actionLabel && actionAction && (
+                  <button
+                    type="button"
+                    onClick={actionAction}
+                    disabled={isLoading || !isConnected}
+                    title={actionTooltip}
+                    className="neopop-button-teal px-4 py-2 font-ui-label text-xs font-medium disabled:opacity-50 flex items-center gap-2 shrink-0"
+                  >
+                    {isLoading ? "Processing..." : actionLabel}
+                  </button>
+                )}
+              </div>
+            </m.div>
           );
         })}
       </m.div>
@@ -377,15 +393,15 @@ export function RecentActivity({ activityItems, onViewFullAuditLog }: RecentActi
             const Icon = item.icon as ComponentType<{ className?: string }>;
             const styles = getStatusStyles(item.color);
             return (
-              <m.div 
-                key={`${item.title}-${i}`} 
-                variants={stagger.item} 
+              <m.div
+                key={`${item.title}-${i}`}
+                variants={stagger.item}
                 className="relative pl-14 pr-4 py-3 rounded-2xl hover:bg-bg-overlay/50 border border-transparent hover:border-edge-neutral/30 transition-all group flex flex-col"
               >
                 <div className={`absolute left-[10px] top-[14px] w-6 h-6 rounded-full ${styles.bg} border flex items-center justify-center z-10 hover:scale-105 transition-transform shadow-xs`}>
                   <Icon className={`${styles.text} w-3.5 h-3.5`} />
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
                   <p className="text-sm font-semibold text-ink-primary font-ui-label group-hover:text-accent transition-colors">
                     {item.title}
@@ -394,11 +410,11 @@ export function RecentActivity({ activityItems, onViewFullAuditLog }: RecentActi
                     {item.time}
                   </span>
                 </div>
-                
+
                 <p className="text-xs text-ink-secondary leading-relaxed font-ui-label mt-1">
                   {item.desc}
                 </p>
-                
+
                 {item.explorerUrl && item.txHash && (
                   <div className="mt-2.5 flex items-center">
                     <a
@@ -418,7 +434,7 @@ export function RecentActivity({ activityItems, onViewFullAuditLog }: RecentActi
             );
           })}
         </m.div>
-        
+
         <button
           type="button"
           onClick={() => {
@@ -443,7 +459,7 @@ interface AccountHealthProps {
 
 export function AccountHealth({ contractCompletionPct = 0 }: AccountHealthProps) {
   const [progressMounted, setProgressMounted] = useState(false);
-  
+
   useEffect(() => {
     const t = setTimeout(() => setProgressMounted(true), 400);
     return () => clearTimeout(t);
