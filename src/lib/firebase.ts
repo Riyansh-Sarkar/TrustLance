@@ -2,13 +2,13 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBk-YEPTWRuJ8EOHez-SVtNqI95caYfFd8",
-  authDomain: "trustlence.firebaseapp.com",
-  projectId: "trustlence",
-  storageBucket: "trustlence.firebasestorage.app",
-  messagingSenderId: "1058271473709",
-  appId: "1:1058271473709:web:8fc5779eab279b17e8c8a4",
-  measurementId: "G-DSZTQ4HNCB"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyBk-YEPTWRuJ8EOHez-SVtNqI95caYfFd8",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "trustlence.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "trustlence",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "trustlence.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "1058271473709",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:1058271473709:web:8fc5779eab279b17e8c8a4",
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-DSZTQ4HNCB"
 };
 
 // Initialize Firebase (SSR friendly)

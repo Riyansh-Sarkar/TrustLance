@@ -266,7 +266,16 @@ export function useWallet() {
     }
 
     try {
-      const { signTransaction } = await import("@stellar/freighter-api");
+      const { signTransaction, getAddress } = await import("@stellar/freighter-api");
+      
+      const activeAddrRes = await getAddress();
+      if (activeAddrRes.address && activeAddrRes.address !== state.publicKey) {
+        const activeShort = `${activeAddrRes.address.substring(0, 6)}...${activeAddrRes.address.substring(activeAddrRes.address.length - 4)}`;
+        const stateShort = `${state.publicKey.substring(0, 6)}...${state.publicKey.substring(state.publicKey.length - 4)}`;
+        toast.error(`Freighter account mismatch: Active wallet is ${activeShort}, but website is connected as ${stateShort}. Please switch accounts in Freighter.`);
+        throw new Error(`Freighter account mismatch: ${activeShort} vs ${stateShort}`);
+      }
+
       const networkPassphrase = process.env.NEXT_PUBLIC_STELLAR_NETWORK === "PUBLIC" 
         ? "Public Global Stellar Network ; September 2015" 
         : "Test SDF Network ; September 2015";
