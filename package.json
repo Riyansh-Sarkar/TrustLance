@@ -9,9 +9,22 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@stellar/freighter-api": "^3.0.1",
+    "@stellar/stellar-sdk": "^14.5.0",
+    "@vercel/analytics": "^1.3.1",
+    "@vercel/speed-insights": "^1.0.12",
+    "buffer": "^6.0.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "escrow": "file:./src/lib/contracts/escrow",
+    "framer-motion": "^11.5.4",
+    "lucide-react": "^0.439.0",
     "next": "16.2.10",
+    "posthog-js": "^1.161.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "sonner": "^1.5.0",
+    "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
