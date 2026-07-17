@@ -4,7 +4,10 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-
+import { PostHogProvider } from "@/components/providers/posthog-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
+import { FeedbackWidget } from "@/components/ui/FeedbackWidget";
+import { InviteReceiver } from "@/components/InviteReceiver";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -79,10 +82,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${outfit.variable} ${jetBrainsMono.variable} ${anton.variable} ${hankenGrotesk.variable} ${inter.variable} antialiased`}
       >
-        <Toaster richColors position="top-right" />
-        {children}
-        <Analytics />
-        <SpeedInsights />
+        <PostHogProvider>
+          <MotionProvider>
+            <Toaster richColors position="top-right" />
+            {children}
+            <FeedbackWidget />
+            <InviteReceiver />
+            <Analytics />
+            <SpeedInsights />
+          </MotionProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
