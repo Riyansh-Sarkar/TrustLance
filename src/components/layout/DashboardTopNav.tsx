@@ -47,6 +47,7 @@ export function DashboardTopNav() {
       { label: "Dashboard", href: "/dashboard" },
       { label: "Contracts", href: "/dashboard/contracts" },
       { label: "Payments", href: "/dashboard/payments" },
+      { label: "Transactions", href: "/dashboard/transactions" },
       { label: "Analytics", href: "/dashboard/analytics" },
       { label: "Account", href: "/dashboard/account" },
       { label: "Help", href: "/dashboard/help" },

@@ -65,7 +65,18 @@ export default function ContractDetailPage() {
         contract.milestones.map(m => m.amount),
         contract.milestones.map(m => m.description)
       );
-      const txHash = (result as { hash?: string })?.hash || "pending";
+      const txHash = (result as { hash?: string })?.hash || (result as { txHash?: string })?.txHash || "pending";
+      
+      if (publicKey && txHash !== "pending") {
+        await logTransactionEvent({
+          contractId: contract.id,
+          type: "escrow_funded",
+          walletAddress: publicKey,
+          txHash,
+          amount: contract.totalAmount.toString(),
+        });
+      }
+
       await updateContract(contract.id, { contractAddress: txHash });
       setContract(prev => prev ? { ...prev, contractAddress: txHash } : null);
       toast.success("Escrow funded successfully!");
@@ -129,13 +140,15 @@ export default function ContractDetailPage() {
     });
 
     try {
-      await onChainSubmitMilestone(activeMilestoneIndex);
+      const txResult = await onChainSubmitMilestone(activeMilestoneIndex);
 
-      if (publicKey) {
+      if (publicKey && txResult?.txHash) {
         await logTransactionEvent({
           contractId: contract.id,
           type: "milestone_submitted",
           walletAddress: publicKey,
+          txHash: txResult.txHash,
+          amount: activeMilestone?.amount?.toString() || "0",
         });
       }
 
@@ -173,12 +186,14 @@ export default function ContractDetailPage() {
     console.log("====================================");
 
     try {
-      await approveMilestone(activeMilestoneIndex);
-      if (publicKey) {
+      const txResult = await approveMilestone(activeMilestoneIndex);
+      if (publicKey && txResult?.txHash) {
         await logTransactionEvent({
           contractId: contract.id,
           type: "milestone_approved",
           walletAddress: publicKey,
+          txHash: txResult.txHash,
+          amount: activeMilestone?.amount?.toString() || "0",
         });
         trackMilestoneApproved(publicKey, contract.id, activeMilestoneIndex);
       }
