@@ -19,60 +19,56 @@ jobs:
     name: Lint · Type-check · Unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
       - name: Type-check
-        run: pnpm exec tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: Unit tests
-        run: pnpm test
+        run: npm test
 
   firestore-rules:
     name: Firestore Rules tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+          java-version: "21"
+          distribution: "temurin"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
       - name: Run Firestore emulator & rules tests
-        run: firebase emulators:exec --only firestore "pnpm test:rules"
+        run: firebase emulators:exec --only firestore "npm run test:rules"
         env:
           FIRESTORE_EMULATOR_HOST: localhost:8080
 
@@ -81,49 +77,48 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [lint-type-test]
+
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: pnpm test:e2e
+        run: npm run test:e2e
         env:
           CI: true
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
         if: failure()
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
 
   contract-compile:
-    name: Soroban contract compile
+    name: Soroban Contract Compile
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust toolchain
+      - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Cache cargo registry and target
+      - name: Cache Cargo
         uses: actions/cache@v4
         with:
           path: |
@@ -134,14 +129,15 @@ jobs:
           restore-keys: |
             cargo-${{ runner.os }}-
 
-      - name: cargo check (wasm32)
+      - name: Cargo Check
         working-directory: contracts/escrow
         run: cargo check --target wasm32-unknown-unknown
 
   cloud-functions-typecheck:
-    name: Cloud Functions type-check
+    name: Cloud Functions Type-check
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -149,12 +145,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
-      - name: Install functions dependencies
+      - name: Install Functions Dependencies
         working-directory: functions
-        run: npm install
+        run: npm ci
 
-      - name: Type-check functions
+      - name: Type-check Functions
         working-directory: functions
         run: npx tsc --noEmit
 
@@ -163,19 +160,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [lint-type-test]
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
-      - run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: npm ci
 
-      - run: pnpm build
+      - name: Build
+        run: npm run build
         env:
           NEXT_PUBLIC_STELLAR_NETWORK: TESTNET
           NEXT_PUBLIC_FIREBASE_API_KEY: AIzaSyBk-YEPTWRuJ8EOHez-SVtNqI95caYfFd8
