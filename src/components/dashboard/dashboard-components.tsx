@@ -333,6 +333,33 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ activityItems, onViewFullAuditLog }: RecentActivityProps) {
+  const getStatusStyles = (colorClass: string) => {
+    const cls = colorClass.toLowerCase();
+    if (cls.includes("primary") || cls.includes("success") || cls.includes("released") || cls.includes("approved")) {
+      return {
+        bg: "bg-status-released/10 border-status-released/20",
+        text: "text-status-released",
+      };
+    }
+    if (cls.includes("error") || cls.includes("danger") || cls.includes("disputed") || cls.includes("failed")) {
+      return {
+        bg: "bg-status-disputed/10 border-status-disputed/20",
+        text: "text-status-disputed",
+      };
+    }
+    if (cls.includes("outline") || cls.includes("warning") || cls.includes("submitted") || cls.includes("pending")) {
+      return {
+        bg: "bg-status-submitted/10 border-status-submitted/20",
+        text: "text-status-submitted",
+      };
+    }
+    // Neutral fallback
+    return {
+      bg: "bg-bg-interactive border-edge-neutral",
+      text: "text-ink-secondary",
+    };
+  };
+
   return (
     <section className="px-4 md:px-margin-desktop mb-section-gap">
       <h3 className="font-ui-label text-sm uppercase tracking-wider text-ink-primary font-medium mb-6">Recent Activity</h3>
@@ -341,38 +368,57 @@ export function RecentActivity({ activityItems, onViewFullAuditLog }: RecentActi
           variants={stagger.container}
           initial="initial"
           animate="animate"
-          className="space-y-6 relative before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-edge-neutral"
+          className="relative before:content-[''] before:absolute before:left-[22px] before:top-2 before:bottom-2 before:w-[2px] before:bg-edge-neutral/40 before:border-l before:border-dashed before:border-edge-neutral/20 flex flex-col gap-2"
         >
           {activityItems.length === 0 && (
-            <p className="text-sm text-ink-tertiary pl-10 pt-2 font-ui-label">No recent activity found.</p>
+            <p className="text-sm text-ink-tertiary pl-14 pt-2 font-ui-label">No recent activity found.</p>
           )}
           {activityItems.map((item, i) => {
             const Icon = item.icon as ComponentType<{ className?: string }>;
+            const styles = getStatusStyles(item.color);
             return (
-              <m.div key={`${item.title}-${i}`} variants={stagger.item} className="relative pl-10">
-                <div className={`absolute left-0.5 top-1 w-5 h-5 rounded-full ${item.color.replace('bg-surface-container-lowest', 'bg-bg-void')} flex items-center justify-center z-10 border-2 border-bg-base`}>
-                  <Icon className="text-ink-primary w-2.5 h-2.5" />
+              <m.div 
+                key={`${item.title}-${i}`} 
+                variants={stagger.item} 
+                className="relative pl-14 pr-4 py-3 rounded-2xl hover:bg-bg-overlay/50 border border-transparent hover:border-edge-neutral/30 transition-all group flex flex-col"
+              >
+                <div className={`absolute left-[10px] top-[14px] w-6 h-6 rounded-full ${styles.bg} border flex items-center justify-center z-10 hover:scale-105 transition-transform shadow-xs`}>
+                  <Icon className={`${styles.text} w-3.5 h-3.5`} />
                 </div>
-                <p className="text-sm font-semibold text-ink-primary font-ui-label mb-1">{item.title}</p>
-                <p className="text-xs text-ink-secondary leading-relaxed font-ui-label">{item.desc}</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <p className="text-[10px] text-ink-tertiary font-mono-data uppercase tracking-widest">{item.time}</p>
-                  {item.explorerUrl && item.txHash && (
+                
+                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                  <p className="text-sm font-semibold text-ink-primary font-ui-label group-hover:text-accent transition-colors">
+                    {item.title}
+                  </p>
+                  <span className="text-[10px] text-ink-tertiary font-mono-data uppercase tracking-widest">
+                    {item.time}
+                  </span>
+                </div>
+                
+                <p className="text-xs text-ink-secondary leading-relaxed font-ui-label mt-1">
+                  {item.desc}
+                </p>
+                
+                {item.explorerUrl && item.txHash && (
+                  <div className="mt-2.5 flex items-center">
                     <a
                       href={item.explorerUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[10px] font-mono-data text-accent hover:underline truncate max-w-[180px] uppercase tracking-wider font-medium"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-bg-void hover:bg-bg-interactive border border-edge-neutral rounded-lg text-[9px] font-mono-data text-ink-secondary hover:text-ink-primary transition-all uppercase tracking-wider font-semibold shadow-xs"
                       title={item.txHash}
                     >
-                      {item.txHash.slice(0, 6)}…{item.txHash.slice(-4)} ↗
+                      <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                      <span>Stellar Tx: {item.txHash.slice(0, 6)}…{item.txHash.slice(-4)}</span>
+                      <span className="text-ink-tertiary">↗</span>
                     </a>
-                  )}
-                </div>
+                  </div>
+                )}
               </m.div>
             );
           })}
         </m.div>
+        
         <button
           type="button"
           onClick={() => {

@@ -12,7 +12,7 @@ export interface SwapEvent {
   errorMessage?: string;
 }
 
-const LOCAL_STORAGE_KEY = "freelancepay_mock_swap_events";
+const LOCAL_STORAGE_KEY = "trustlance_mock_swap_events";
 
 function getLocalEvents(): SwapEvent[] {
   if (typeof window === "undefined") return [];

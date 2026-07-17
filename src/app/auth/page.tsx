@@ -70,7 +70,7 @@ export default function AuthWizard() {
           </div>
           <h2 className="text-section-title text-ink-primary mb-2">Wrong Network</h2>
           <p className="text-ui-label text-ink-secondary mb-6">
-            Your wallet is connected to <strong className="text-status-error">{walletNetwork}</strong>, but FreelancePay is currently running on <strong className="text-status-success">{configuredSiteNetwork}</strong>.
+            Your wallet is connected to <strong className="text-status-error">{walletNetwork}</strong>, but TrustLance is currently running on <strong className="text-status-success">{configuredSiteNetwork}</strong>.
           </p>
           <p className="text-[14px] text-ink-tertiary mb-8">
             Please open your wallet extension, switch your network to {configuredSiteNetwork}, and verify again.
@@ -214,7 +214,7 @@ export default function AuthWizard() {
                   </button>
                   <h2 className="text-section-title text-ink-primary">Select Role</h2>
                 </div>
-                <p className="text-ui-label text-ink-secondary mb-8">How will you use FreelancePay?</p>
+                <p className="text-ui-label text-ink-secondary mb-8">How will you use TrustLance?</p>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <button

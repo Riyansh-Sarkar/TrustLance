@@ -63,7 +63,7 @@ function InviteReceiverContent() {
                   You&apos;ve been invited!
                 </h2>
                 <p className="font-mono-data text-ink-secondary text-sm">
-                  Someone invited you to collaborate on a smart contract via FreelancePay.
+                  Someone invited you to collaborate on a smart contract via TrustLance.
                 </p>
               </div>
 

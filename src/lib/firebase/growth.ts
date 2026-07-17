@@ -1,9 +1,9 @@
 import { FeedbackEntry, Invite, TransactionEvent, OnboardingEvent } from '@/types/growth';
 
-const MOCK_FEEDBACK_KEY = 'freelancepay_mock_feedback_growth';
-const MOCK_INVITES_KEY = 'freelancepay_mock_invites';
-const MOCK_TX_EVENTS_KEY = 'freelancepay_mock_tx_events';
-const MOCK_ONBOARDING_KEY = 'freelancepay_mock_onboarding_events';
+const MOCK_FEEDBACK_KEY = 'trustlance_mock_feedback_growth';
+const MOCK_INVITES_KEY = 'trustlance_mock_invites';
+const MOCK_TX_EVENTS_KEY = 'trustlance_mock_tx_events';
+const MOCK_ONBOARDING_KEY = 'trustlance_mock_onboarding_events';
 
 function getLocalData<T>(key: string): T[] {
   if (typeof window === "undefined") return [];

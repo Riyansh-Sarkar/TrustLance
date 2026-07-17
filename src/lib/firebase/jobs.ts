@@ -1,7 +1,7 @@
 import type { Job, JobApplication } from "@/types";
 
-const LOCAL_STORAGE_JOBS_KEY = "freelancepay_mock_jobs";
-const LOCAL_STORAGE_APPS_KEY = "freelancepay_mock_apps";
+const LOCAL_STORAGE_JOBS_KEY = "trustlance_mock_jobs";
+const LOCAL_STORAGE_APPS_KEY = "trustlance_mock_apps";
 
 function getLocalJobs(): Job[] {
   if (typeof window === "undefined") return [];

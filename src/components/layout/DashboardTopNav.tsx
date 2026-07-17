@@ -90,10 +90,10 @@ export function DashboardTopNav() {
             <FriendbotButton />
           </div>
           <div className="relative w-full max-w-md hidden sm:block" ref={commandRef}>
-            <Search className="absolute left-3 top-2.5 text-ink-tertiary w-5 h-5" />
+            <Search className="absolute left-4 top-[10px] text-ink-tertiary w-4 h-4" />
             <input
               aria-label="Search"
-              className="w-full bg-bg-base border border-edge-neutral rounded-xl pl-10 pr-4 py-2 font-ui-label text-ui-label text-ink-primary focus:outline-none focus:ring-2 focus:ring-accent-glow focus:border-accent transition-all placeholder:text-ink-tertiary"
+              className="w-full bg-bg-base border border-edge-neutral rounded-xl pl-12 pr-4 py-2 font-ui-label text-ui-label text-ink-primary focus:outline-none focus:ring-2 focus:ring-accent-glow focus:border-accent transition-all placeholder:text-ink-tertiary"
               placeholder="Search contracts, transactions..."
               type="text"
               value={commandSearch}

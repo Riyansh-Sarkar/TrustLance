@@ -63,7 +63,7 @@ export function useWallet() {
     {
       id: "freighter",
       name: "Freighter",
-      icon: "/logo.png",
+      icon: "/logo.svg",
       isAvailable: true,
     },
   ]);

@@ -17,15 +17,15 @@ export function Logo({
   return (
     <div className="flex items-center gap-2">
       <Image 
-        src="/logo.png" 
-        alt="FreelancePay Logo" 
+        src="/logo.svg" 
+        alt="TrustLance Logo" 
         width={iconSize} 
         height={iconSize} 
         className="object-contain shrink-0"
       />
       <div className={`min-w-0 flex flex-col justify-center ${hideTextOnMobile ? 'hidden sm:flex' : 'flex'}`}>
         <span className={`${textSize} font-headline-lg text-primary leading-none truncate block`}>
-          FreelancePay
+          TrustLance
         </span>
         <span className={`text-on-surface-variant font-ui-label ${subTextSize} uppercase tracking-wider truncate block mt-0.5`}>
           Infrastructure

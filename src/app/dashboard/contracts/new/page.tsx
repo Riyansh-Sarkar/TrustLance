@@ -317,7 +317,7 @@ function NewContractForm() {
 
           <div className="text-center mb-8 pt-4">
             <h3 className="font-ui-label text-ink-primary font-semibold tracking-wider uppercase text-sm">Escrow Receipt</h3>
-            <p className="font-mono-data text-ink-tertiary text-[9px] uppercase mt-1">FreelancePay Protocol</p>
+            <p className="font-mono-data text-ink-tertiary text-[9px] uppercase mt-1">TrustLance Protocol</p>
           </div>
 
           <div className="space-y-6">

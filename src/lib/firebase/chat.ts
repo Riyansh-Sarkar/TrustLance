@@ -8,7 +8,7 @@ export interface ChatMessage {
 export async function sendMessage(contractId: string, senderWallet: string, text: string) {
   if (!text.trim()) return;
   
-  const key = `freelancepay_mock_chat_${contractId}`;
+  const key = `trustlance_mock_chat_${contractId}`;
   let messages: ChatMessage[] = [];
   try {
     const stored = localStorage.getItem(key);
@@ -30,7 +30,7 @@ export async function sendMessage(contractId: string, senderWallet: string, text
 }
 
 export function subscribeToMessages(contractId: string, callback: (messages: ChatMessage[]) => void) {
-  const key = `freelancepay_mock_chat_${contractId}`;
+  const key = `trustlance_mock_chat_${contractId}`;
   
   const readAndCallback = () => {
     if (typeof window === "undefined") return;

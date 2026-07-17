@@ -196,7 +196,7 @@ export default function PaymentsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `freelancepay_transactions_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `trustlance_transactions_${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -258,10 +258,10 @@ export default function PaymentsPage() {
               <h2 className="font-ui-label text-xl font-bold text-ink-primary">History</h2>
               
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3.5 top-3 text-ink-tertiary w-4 h-4" />
+                <Search className="absolute left-4 top-[9px] text-ink-tertiary w-4 h-4" />
                 <input
                   aria-label="Search transactions"
-                  className="w-full bg-bg-base border border-edge-neutral focus:border-accent focus:ring-2 focus:ring-accent-glow rounded-xl pl-10 pr-4 py-2 font-ui-label text-xs outline-none transition-all text-ink-primary placeholder:text-ink-tertiary"
+                  className="w-full bg-bg-base border border-edge-neutral focus:border-accent focus:ring-2 focus:ring-accent-glow rounded-xl pl-12 pr-4 py-2 font-ui-label text-xs outline-none transition-all text-ink-primary placeholder:text-ink-tertiary"
                   placeholder="Search TXN hash..."
                   type="text"
                   value={searchTerm}

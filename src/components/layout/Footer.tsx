@@ -62,7 +62,7 @@ export function Footer() {
 
         <div className="pt-8 divider flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="font-mono-data text-[10px] text-ink-tertiary uppercase tracking-widest flex flex-col sm:flex-row gap-2 sm:gap-4 text-center sm:text-left items-center">
-            <span>&copy; 2026 FreelancePay &middot; Built on Stellar</span>
+            <span>&copy; 2026 TrustLance &middot; Built on Stellar</span>
             <span className="hidden sm:inline opacity-50">|</span>
             <span>
               Designed & Built By{" "}

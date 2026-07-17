@@ -49,6 +49,9 @@ export const metadata: Metadata = {
   title: "TrustLance - Ship. Get Paid. No Trust Req.",
   description:
     "Decentralized escrow protocol for high-stakes freelance contracts. Built for architectural rigor and absolute payment certainty.",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({

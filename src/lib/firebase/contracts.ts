@@ -1,7 +1,7 @@
 import type { Contract, MilestoneStatus } from "@/types";
 
-const LOCAL_STORAGE_KEY = "freelancepay_mock_contracts";
-const LOCAL_STORAGE_FEEDBACK_KEY = "freelancepay_mock_feedback";
+const LOCAL_STORAGE_KEY = "trustlance_mock_contracts";
+const LOCAL_STORAGE_FEEDBACK_KEY = "trustlance_mock_feedback";
 
 function getLocalContracts(): Contract[] {
   if (typeof window === "undefined") return [];
