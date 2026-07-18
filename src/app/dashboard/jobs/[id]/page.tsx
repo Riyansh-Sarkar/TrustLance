@@ -3,12 +3,11 @@
 import React, { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, ArrowRight, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Loader2, ArrowRight, CheckCircle2, Trash2 } from "lucide-react";
 import { getJob, getJobApplications, applyToJob, deleteJob } from "@/lib/firebase/jobs";
 import { useWallet } from "@/hooks/useWallet";
 import { ErrorBoundary } from "@/components/providers/error-boundary";
 import type { Job, JobApplication } from "@/types";
-import { m, AnimatePresence } from "framer-motion";
 
 function formatTimeAgo(dateInput: string | Date) {
   const date = new Date(dateInput);

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useProfile } from "@/hooks/useProfile";
 import { Redirect } from "@/components/Redirect";
 import { m, AnimatePresence } from "framer-motion";
-import { Loader2, CheckCircle2, User, Briefcase, ChevronRight, Wallet, ArrowRight, Code2, ArrowLeft, Mail } from "lucide-react";
+import { Loader2, CheckCircle2, Briefcase, ChevronRight, ArrowRight, Code2, ArrowLeft, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
@@ -34,7 +34,6 @@ export default function AuthWizard() {
   const [role, setRole] = useState<"freelancer" | "client" | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [isFinalizing, setIsFinalizing] = useState(false);
   const { updateProfile } = useProfile(publicKey);
 
   const getEmailProvider = (emailAddress: string) => {
@@ -149,7 +148,6 @@ export default function AuthWizard() {
 
     setDirection(1);
     setStep(4);
-    setIsFinalizing(true);
   };
 
   const goBack = () => {

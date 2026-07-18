@@ -28,5 +28,9 @@ export default defineConfig([
 
     // Static build output
     "dist/**",
+
+    // Generated contract bindings
+    "src/lib/contracts/**/dist/**",
+    "src/lib/contracts/**/src/**",
   ]),
 ]);

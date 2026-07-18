@@ -6,7 +6,8 @@ import {
   getDocs, 
   query, 
   where,
-  limit as firestoreLimit
+  limit as firestoreLimit,
+  type DocumentSnapshot
 } from "firebase/firestore";
 
 export interface SwapEvent {
@@ -24,8 +25,11 @@ export interface SwapEvent {
 }
 
 // Helper to convert Firestore doc to SwapEvent type
-function docToSwapEvent(docSnap: any): SwapEvent {
+function docToSwapEvent(docSnap: DocumentSnapshot): SwapEvent {
   const data = docSnap.data();
+  if (!data) {
+    throw new Error("No data found in swap event snapshot");
+  }
   return {
     ...data,
     id: docSnap.id,

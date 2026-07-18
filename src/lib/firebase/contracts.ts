@@ -10,12 +10,16 @@ import {
   where, 
   or,
   updateDoc, 
-  deleteDoc
+  deleteDoc,
+  type DocumentSnapshot
 } from "firebase/firestore";
 
 // Helper to convert Firestore doc to Contract type
-function docToContract(docSnap: any): Contract {
+function docToContract(docSnap: DocumentSnapshot): Contract {
   const data = docSnap.data();
+  if (!data) {
+    throw new Error("No data found in contract snapshot");
+  }
   return {
     ...data,
     id: docSnap.id,

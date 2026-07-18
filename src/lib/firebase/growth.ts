@@ -6,12 +6,16 @@ import {
   setDoc, 
   getDocs, 
   query, 
-  where
+  where,
+  type DocumentSnapshot
 } from "firebase/firestore";
 
 // Helper to convert Firestore doc to TransactionEvent type
-function docToTxEvent(docSnap: any): TransactionEvent {
+function docToTxEvent(docSnap: DocumentSnapshot): TransactionEvent {
   const data = docSnap.data();
+  if (!data) {
+    throw new Error("No data found in transaction event snapshot");
+  }
   return {
     ...data,
     id: docSnap.id,
@@ -71,7 +75,7 @@ export const getTransactionEvents = async (contractId: string) => {
     snap.forEach((doc) => {
       events.push(docToTxEvent(doc));
     });
-    return events.sort((a, b) => new Date(a.timestamp as any).getTime() - new Date(b.timestamp as any).getTime());
+    return events.sort((a, b) => new Date(a.timestamp as string | Date).getTime() - new Date(b.timestamp as string | Date).getTime());
   } catch (e) {
     console.error("Firestore getTransactionEvents failed:", e);
     return [];

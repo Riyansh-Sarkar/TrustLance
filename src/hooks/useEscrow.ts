@@ -259,14 +259,14 @@ export function useEscrow(projectId?: string, contractId?: string) {
       const onChain = state;
       const ms = onChain?.milestones?.[milestoneId];
       if (ms) {
-        const statusVal = ms.status as any;
+        const statusVal = ms.status as string | number | { tag?: string } | null | undefined;
         let tag = "";
         if (typeof statusVal === 'string') {
           tag = statusVal;
         } else if (typeof statusVal === 'number') {
           const statuses = ["pending", "submitted", "approved", "released", "disputed"];
           tag = statuses[statusVal] || "";
-        } else if (statusVal?.tag) {
+        } else if (statusVal && typeof statusVal === 'object' && 'tag' in statusVal && typeof statusVal.tag === 'string') {
           tag = statusVal.tag;
         }
         tag = tag.toLowerCase();
@@ -319,7 +319,7 @@ export function useEscrow(projectId?: string, contractId?: string) {
     } finally {
       setIsFetching(false);
     }
-  }, [isConnected, isFetching, client, state, sign, fetchState, projectId]);
+  }, [isConnected, isFetching, client, state, sign, fetchState, projectId, publicKey, resolvedContractId]);
 
   const flagDispute = useCallback(async (customProjectId?: string) => {
     if (!isConnected || !publicKey) {

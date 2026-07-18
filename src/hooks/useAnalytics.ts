@@ -3,7 +3,7 @@ import { usePostHog } from 'posthog-js/react'
 export const useAnalytics = () => {
   const posthog = usePostHog()
 
-  const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+  const trackEvent = (eventName: string, properties?: Record<string, unknown>) => {
     if (posthog) {
       posthog.capture(eventName, properties)
     }

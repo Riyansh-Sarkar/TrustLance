@@ -8,10 +8,9 @@ import { useWallet } from "@/hooks/useWallet";
 
 interface ContractReviewWidgetProps {
   contractId: string;
-  recipientWallet: string;
 }
 
-export function ContractReviewWidget({ contractId, recipientWallet }: ContractReviewWidgetProps) {
+export function ContractReviewWidget({ contractId }: ContractReviewWidgetProps) {
   const { publicKey } = useWallet();
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState("");

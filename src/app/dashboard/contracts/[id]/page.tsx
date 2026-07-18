@@ -6,12 +6,12 @@ import { useWallet } from "@/hooks/useWallet";
 import { useEscrow } from "@/hooks/useEscrow";
 import { getContract, updateMilestoneStatus, flagDispute, updateContract } from "@/lib/firebase/contracts";
 import { ErrorBoundary } from "@/components/providers/error-boundary";
-import type { Contract, MilestoneStatus } from "@/types";
+import type { Contract } from "@/types";
 import Link from "next/link";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { logTransactionEvent } from "@/lib/firebase/growth";
 
-import { ArrowLeft, Loader2, AlertCircle, ShieldAlert, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
 import { ChatWidget } from "@/components/dashboard/ChatWidget";
@@ -160,8 +160,9 @@ export default function ContractDetailPage() {
       if (publicKey) trackMilestoneSubmitted(publicKey, contract.id, activeMilestoneIndex);
       toast.success("Work submitted for review!");
       window.dispatchEvent(new CustomEvent('open-feedback-modal', { detail: { action: 'submit_milestone' } }));
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to submit work. Please try again.");
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      toast.error(errMsg || "Failed to submit work. Please try again.");
     } finally {
       submittingWorkRef.current = false;
       setIsSubmittingWork(false);
@@ -301,7 +302,7 @@ export default function ContractDetailPage() {
       
       toast.success("Contract cancelled and funds refunded.", { id: "cancel" });
       router.push("/dashboard/contracts");
-    } catch (err) {
+    } catch {
       toast.error("Failed to cancel contract.", { id: "cancel" });
       setIsCancelling(false);
     } finally {
@@ -406,8 +407,8 @@ export default function ContractDetailPage() {
                           <p className="font-mono-data text-ink-secondary text-[10px] uppercase tracking-wider flex items-center gap-2 font-medium">
                             Status: <span className={isCompleted ? 'text-accent' : isActive ? 'text-ink-primary' : ''}>{m.status}</span>
                             {(() => {
-                              const onChainStatus = escrowState?.milestones?.[index]?.status as any;
-                              const onChainTag = (typeof onChainStatus === 'string' ? onChainStatus : onChainStatus?.tag || "").toLowerCase();
+                              const onChainStatus = escrowState?.milestones?.[index]?.status as string | { tag?: string } | null | undefined;
+                              const onChainTag = (typeof onChainStatus === 'string' ? onChainStatus : (onChainStatus && typeof onChainStatus === 'object' && 'tag' in onChainStatus && typeof onChainStatus.tag === 'string' ? onChainStatus.tag : "")).toLowerCase();
                               if (onChainTag === "approved" || onChainTag === "released") {
                                 return (
                                   <span className="inline-flex items-center gap-1 bg-accent/10 border border-accent/30 text-accent px-2 py-0.5 text-[9px] rounded-full font-medium">
@@ -618,7 +619,6 @@ export default function ContractDetailPage() {
                   {contract.isClosed && (
                     <ContractReviewWidget 
                       contractId={contract.id} 
-                      recipientWallet={contract.freelancerWallet} 
                     />
                   )}
                 </div>
@@ -632,36 +632,35 @@ export default function ContractDetailPage() {
                   ) : currentStatus === "pending" ? (
                     <form onSubmit={handleSubmitWork} className="space-y-4">
                       <input
-                        type="url"
-                        required
-                        value={deliverableUrl}
-                        onChange={(e) => setDeliverableUrl(e.target.value)}
-                        placeholder="Deliverable URL (https://...)"
-                        className="w-full bg-bg-base border border-edge-neutral focus:border-accent focus:ring-2 focus:ring-accent-glow rounded-xl p-3 font-mono-data text-xs transition-all"
+                         type="url"
+                         required
+                         value={deliverableUrl}
+                         onChange={(e) => setDeliverableUrl(e.target.value)}
+                         placeholder="Deliverable URL (https://...)"
+                         className="w-full bg-bg-base border border-edge-neutral focus:border-accent focus:ring-2 focus:ring-accent-glow rounded-xl p-3 font-mono-data text-xs transition-all"
                       />
                       <button
-                        type="submit"
-                        disabled={isSubmittingWork || !deliverableUrl}
-                        className="neopop-button-teal w-full py-3.5 font-ui-label font-medium text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                         type="submit"
+                         disabled={isSubmittingWork || !deliverableUrl}
+                         className="neopop-button-teal w-full py-3.5 font-ui-label font-medium text-xs flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         {isSubmittingWork ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Work"}
                       </button>
                     </form>
                   ) : currentStatus === "submitted" ? (
                     <div className="text-center p-6 border border-dashed border-edge-neutral rounded-xl bg-bg-void/50">
-                      <p className="font-ui-label text-xs text-ink-secondary uppercase tracking-wider font-semibold mb-1">In Review</p>
-                      <p className="font-mono-data text-[10px] text-ink-tertiary font-medium">Awaiting client approval</p>
+                       <p className="font-ui-label text-xs text-ink-secondary uppercase tracking-wider font-semibold mb-1">In Review</p>
+                       <p className="font-mono-data text-[10px] text-ink-tertiary font-medium">Awaiting client approval</p>
                     </div>
                   ) : (
                     <div className="text-center p-6 border border-dashed border-accent/35 rounded-xl bg-accent-glow">
-                      <p className="font-ui-label text-xs text-accent font-semibold uppercase tracking-wider mb-1">Completed</p>
-                      <p className="font-mono-data text-[10px] text-accent mt-1 font-semibold uppercase">Funds Released</p>
+                       <p className="font-ui-label text-xs text-accent font-semibold uppercase tracking-wider mb-1">Completed</p>
+                       <p className="font-mono-data text-[10px] text-accent mt-1 font-semibold uppercase">Funds Released</p>
                     </div>
                   )}
                   {contract.isClosed && (
                     <ContractReviewWidget 
                       contractId={contract.id} 
-                      recipientWallet={contract.clientWallet} 
                     />
                   )}
                 </div>

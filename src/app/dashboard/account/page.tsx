@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { m } from 'framer-motion';
 import { useWallet } from "@/hooks/useWallet";
 import { useProfile } from "@/hooks/useProfile";
 import { useDarkMode } from "@/hooks/useDarkMode";

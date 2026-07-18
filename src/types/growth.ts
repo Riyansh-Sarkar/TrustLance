@@ -37,6 +37,6 @@ export interface OnboardingEvent {
   id?: string;
   walletAddress: string;
   event: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   timestamp: Date | string | { toDate?: () => Date; toMillis?: () => number };
 }

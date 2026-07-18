@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { m } from 'framer-motion';
 import { Plus, HelpCircle, UserCog, AlertTriangle } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { Logo } from "@/components/ui/Logo";
@@ -17,9 +16,12 @@ export function DashboardSidebar() {
   const siteNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK || "TESTNET";
   const resolvedWalletNet = walletNetwork ? walletNetwork.toUpperCase() : siteNetwork === "PUBLIC" ? "MAINNET" : "TESTNET";
   const wNet = resolvedWalletNet === "PUBLIC" ? "MAINNET" : resolvedWalletNet;
-  if (!mounted) {
-    setMounted(true);
-  }
+
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      setMounted(true);
+    });
+  }, []);
 
   // Normalize both for comparison
   const sNetNorm = siteNetwork === "PUBLIC" ? "MAINNET" : siteNetwork.toUpperCase();

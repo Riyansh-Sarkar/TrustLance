@@ -78,12 +78,15 @@ export async function submitHorizonTransaction(signedXdr: string) {
       throw new Error(`Classic transaction failed (tx_failed) for hash ${result.hash}`);
     }
     return result;
-  } catch (err: any) {
-    if (err.response?.data?.extras?.result_codes) {
-      const codes = err.response.data.extras.result_codes;
-      const txCode = codes.transaction;
-      const opCodes = codes.operations?.join(", ");
-      throw new Error(`Transaction failed: ${txCode} ${opCodes ? `(${opCodes})` : ""}`);
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && "response" in err) {
+      const response = (err as { response: { data?: { extras?: { result_codes?: { transaction: string; operations?: string[] } } } } }).response;
+      const codes = response?.data?.extras?.result_codes;
+      if (codes) {
+        const txCode = codes.transaction;
+        const opCodes = codes.operations?.join(", ");
+        throw new Error(`Transaction failed: ${txCode} ${opCodes ? `(${opCodes})` : ""}`);
+      }
     }
     throw err;
   }

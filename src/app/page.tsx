@@ -4,9 +4,9 @@ import { useState } from "react";
 import { m } from "framer-motion";
 import Link from "next/link";
 import { 
-  ArrowRight, ShieldCheck, CheckCircle2, Lock, Wallet, 
-  Code2, Terminal, Globe, Activity, FileCode, HelpCircle, 
-  Check, ArrowUpRight, Search, Bell, Sparkles, ChevronDown
+  ArrowRight, ShieldCheck, Lock, Wallet, 
+  Terminal, Globe, 
+  Check, Sparkles, ChevronDown
 } from "lucide-react";
 
 export default function Home() {

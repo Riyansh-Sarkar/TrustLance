@@ -89,7 +89,7 @@ export function ActivityFeed({ contractId }: { contractId: string }) {
                       {formatEventName(event.type)}
                     </p>
                     <span className="font-mono-data text-[10px] text-ink-tertiary">
-                      {event.timestamp ? formatDistanceToNow(event.timestamp instanceof Date ? event.timestamp : (event.timestamp as any).toDate?.() || event.timestamp, { addSuffix: true }) : "Just now"}
+                      {event.timestamp ? formatDistanceToNow(event.timestamp instanceof Date ? event.timestamp : (event.timestamp && typeof event.timestamp === "object" && "toDate" in event.timestamp && typeof event.timestamp.toDate === "function" ? (event.timestamp.toDate() as Date) : new Date(String(event.timestamp))), { addSuffix: true }) : "Just now"}
                     </span>
                   </div>
                   <div className="mt-1 flex items-center gap-2">

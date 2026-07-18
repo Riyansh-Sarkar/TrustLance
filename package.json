@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test test/unit.test.js",
-    "test:rules": "node --test test/firestore-rules.test.js",
-    "test:e2e": "playwright test"
+    "test": "node --experimental-strip-types --test test/unit.test.ts",
+    "test:rules": "node --experimental-strip-types --test test/firestore-rules.test.ts",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@stellar/freighter-api": "^3.0.1",

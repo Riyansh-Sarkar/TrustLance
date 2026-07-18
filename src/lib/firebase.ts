@@ -54,7 +54,7 @@ export async function getPreferences(address: string) {
   return null;
 }
 
-export async function updatePreferences(address: string, preferences: any) {
+export async function updatePreferences(address: string, preferences: Record<string, unknown>) {
   try {
     const docRef = doc(db, "preferences", address);
     await setDoc(docRef, preferences, { merge: true });
@@ -63,16 +63,28 @@ export async function updatePreferences(address: string, preferences: any) {
   }
 }
 
+interface Migratable {
+  id?: string;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+  timestamp?: unknown;
+  [key: string]: unknown;
+}
+
 // Serialize Date utility for Firestore
-export function serializeDate(date: any): string {
+export function serializeDate(date: unknown): string {
   if (date instanceof Date) return date.toISOString();
   if (typeof date === "string") return date;
-  if (date && typeof date === "object" && "toISOString" in date) return (date as any).toISOString();
-  if (date && typeof date === "object" && "toDate" in date && typeof date.toDate === "function") {
-    return date.toDate().toISOString();
-  }
-  if (date && typeof date === "object" && "seconds" in date && typeof date.seconds === "number") {
-    return new Date(date.seconds * 1000).toISOString();
+  if (date && typeof date === "object") {
+    if ("toISOString" in date && typeof date.toISOString === "function") {
+      return (date as { toISOString: () => string }).toISOString();
+    }
+    if ("toDate" in date && typeof date.toDate === "function") {
+      return (date.toDate() as Date).toISOString();
+    }
+    if ("seconds" in date && typeof date.seconds === "number") {
+      return new Date(date.seconds * 1000).toISOString();
+    }
   }
   return new Date().toISOString();
 }
@@ -99,7 +111,7 @@ export async function migrateLocalStorageToFirestore(walletAddress: string) {
   const localPrefs = localStorage.getItem(prefsKey);
   if (localPrefs) {
     try {
-      const parsed = JSON.parse(localPrefs);
+      const parsed = JSON.parse(localPrefs) as Record<string, unknown>;
       const remote = await getPreferences(walletAddress);
       if (!remote) {
         await updatePreferences(walletAddress, parsed);
@@ -114,7 +126,7 @@ export async function migrateLocalStorageToFirestore(walletAddress: string) {
   const contractsData = localStorage.getItem(contractsKey);
   if (contractsData) {
     try {
-      const contracts: any[] = JSON.parse(contractsData);
+      const contracts: Migratable[] = JSON.parse(contractsData);
       for (const c of contracts) {
         if (!c.id) continue;
         const docRef = doc(db, "contracts", c.id);
@@ -138,7 +150,7 @@ export async function migrateLocalStorageToFirestore(walletAddress: string) {
   const jobsData = localStorage.getItem(jobsKey);
   if (jobsData) {
     try {
-      const jobs: any[] = JSON.parse(jobsData);
+      const jobs: Migratable[] = JSON.parse(jobsData);
       for (const j of jobs) {
         if (!j.id) continue;
         const docRef = doc(db, "jobs", j.id);
@@ -162,7 +174,7 @@ export async function migrateLocalStorageToFirestore(walletAddress: string) {
   const appsData = localStorage.getItem(appsKey);
   if (appsData) {
     try {
-      const apps: any[] = JSON.parse(appsData);
+      const apps: Migratable[] = JSON.parse(appsData);
       for (const a of apps) {
         if (!a.id) continue;
         const docRef = doc(db, "applications", a.id);
@@ -186,7 +198,7 @@ export async function migrateLocalStorageToFirestore(walletAddress: string) {
   const swapsData = localStorage.getItem(swapsKey);
   if (swapsData) {
     try {
-      const swaps: any[] = JSON.parse(swapsData);
+      const swaps: Migratable[] = JSON.parse(swapsData);
       for (const s of swaps) {
         if (!s.id) continue;
         const docRef = doc(db, "swap_events", s.id);
@@ -216,7 +228,7 @@ export async function migrateLocalStorageToFirestore(walletAddress: string) {
     const data = localStorage.getItem(local);
     if (data) {
       try {
-        const items: any[] = JSON.parse(data);
+        const items: Migratable[] = JSON.parse(data);
         for (const item of items) {
           if (!item.id) continue;
           const docRef = doc(db, col, item.id);

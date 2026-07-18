@@ -70,13 +70,13 @@ export default function DashboardPage() {
     escrowState.milestones.forEach((onChainMilestone) => {
       const idx = Number(onChainMilestone.id);
       let onChainStatus = "";
-      const statusVal = onChainMilestone.status as any;
+      const statusVal = onChainMilestone.status as string | number | { tag?: string } | null | undefined;
       if (typeof statusVal === 'string') {
         onChainStatus = statusVal.toLowerCase();
       } else if (typeof statusVal === 'number') {
         const statuses = ["pending", "submitted", "approved", "released", "disputed"];
         onChainStatus = statuses[statusVal] || "";
-      } else if (statusVal?.tag) {
+      } else if (statusVal && typeof statusVal === 'object' && 'tag' in statusVal && typeof statusVal.tag === 'string') {
         onChainStatus = statusVal.tag.toLowerCase();
       }
 

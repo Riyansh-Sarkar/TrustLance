@@ -9,12 +9,16 @@ import {
   query, 
   where, 
   updateDoc, 
-  deleteDoc
+  deleteDoc,
+  type DocumentSnapshot
 } from "firebase/firestore";
 
 // Helper to convert Firestore doc to Job type
-function docToJob(docSnap: any): Job {
+function docToJob(docSnap: DocumentSnapshot): Job {
   const data = docSnap.data();
+  if (!data) {
+    throw new Error("No data found in job snapshot");
+  }
   return {
     ...data,
     id: docSnap.id,
@@ -24,8 +28,11 @@ function docToJob(docSnap: any): Job {
 }
 
 // Helper to convert Firestore doc to JobApplication type
-function docToApp(docSnap: any): JobApplication {
+function docToApp(docSnap: DocumentSnapshot): JobApplication {
   const data = docSnap.data();
+  if (!data) {
+    throw new Error("No data found in job application snapshot");
+  }
   return {
     ...data,
     id: docSnap.id,

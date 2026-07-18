@@ -7,13 +7,18 @@ interface UserProfile {
 }
 
 export function useProfile(publicKey: string | null) {
+  const [prevPublicKey, setPrevPublicKey] = useState<string | null>(publicKey);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(publicKey ? true : false);
+
+  if (publicKey !== prevPublicKey) {
+    setPrevPublicKey(publicKey);
+    setProfile(null);
+    setIsLoading(publicKey ? true : false);
+  }
 
   useEffect(() => {
     if (!publicKey) {
-      setProfile(null);
-      setIsLoading(false);
       return;
     }
 
@@ -21,13 +26,15 @@ export function useProfile(publicKey: string | null) {
       const cached = localStorage.getItem(`fp_profile_${publicKey}`);
       if (cached) {
         try {
-          setProfile(JSON.parse(cached));
+          const parsed = JSON.parse(cached);
+          Promise.resolve().then(() => {
+            setProfile(parsed);
+          });
         } catch {}
       }
     }
 
     let active = true;
-    setIsLoading(true);
 
     getProfile(publicKey)
       .then((data) => {

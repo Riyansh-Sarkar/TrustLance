@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, ArrowRight, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { createContract } from "@/lib/firebase/contracts";
 import { updateJobStatus, updateApplicationStatus } from "@/lib/firebase/jobs";
 import { useWallet } from "@/hooks/useWallet";
-import { useEscrow } from "@/hooks/useEscrow";
-import { ErrorBoundary } from "@/components/providers/error-boundary";
 import { m, AnimatePresence } from 'framer-motion';
+import { ErrorBoundary } from "@/components/providers/error-boundary";
 import type { NewContractFormData } from "@/types";
 import Link from "next/link";
 
@@ -16,7 +15,6 @@ function NewContractForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { publicKey } = useWallet();
-  const { fundContract } = useEscrow();
 
   const queryJobId = searchParams?.get("jobId") || "";
   const queryAppId = searchParams?.get("applicationId") || "";
@@ -38,9 +36,8 @@ function NewContractForm() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(() => {
-    return queryFreelancer && (!queryFreelancer.startsWith("G") || queryFreelancer.length !== 56)
-      ? "Invalid freelancer address in URL parameters."
-      : null;
+    const isInvalid = queryFreelancer && (!queryFreelancer.startsWith("G") || queryFreelancer.length !== 56);
+    return isInvalid ? "Invalid freelancer address format." : null;
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +57,6 @@ function NewContractForm() {
     setError(null);
     try {
       const milestoneAmounts = formData.milestones.map(m => parseFloat(m.amount || "0"));
-      const milestoneDescriptions = formData.milestones.map(m => m.description);
       const totalAmount = milestoneAmounts.reduce((a, b) => a + b, 0);
 
       // Dynamically import generateContractId so it works on client side
@@ -80,14 +76,13 @@ function NewContractForm() {
         ...(formData.jobId ? { jobId: formData.jobId } : {}),
         ...(formData.applicationId ? { applicationId: formData.applicationId } : {}),
         milestones: formData.milestones.map((m, idx) => {
-          const milestone: any = {
+          return {
             id: idx + 1,
             description: m.description || `Milestone ${idx + 1}`,
             amount: parseFloat(m.amount || "0"),
-            status: "pending",
+            status: "pending" as const,
+            ...(m.deliverableUrl ? { deliverableUrl: m.deliverableUrl } : {}),
           };
-          if (m.deliverableUrl) milestone.deliverableUrl = m.deliverableUrl;
-          return milestone;
         })
       }, projectId);
 

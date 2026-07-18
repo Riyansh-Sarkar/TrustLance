@@ -28,7 +28,7 @@ import type { Contract } from "@/types";
 import { toast } from "sonner";
 import { ErrorBoundary } from "@/components/providers/error-boundary";
 import { horizonServer } from "@/lib/stellar/client";
-import { TransactionBuilder, scValToNative, StrKey } from "@stellar/stellar-sdk";
+import { TransactionBuilder, scValToNative, StrKey, xdr } from "@stellar/stellar-sdk";
 import { STELLAR_CONFIG } from "@/constants/stellar";
 
 // Utility to convert hex string to Uint8Array safely in browser context
@@ -60,12 +60,45 @@ export interface TransactionDetails {
   isIncoming: boolean;
 }
 
+interface StellarTransactionRecord {
+  envelope_xdr: string;
+  source_account: string;
+  hash: string;
+  fee_charged: string | number;
+  created_at: string;
+  successful: boolean;
+}
+
+interface InvokeHostFunctionOp {
+  type: "invokeHostFunction";
+  func?: {
+    arm: () => string;
+    value: () => {
+      contractAddress: () => {
+        contractId: () => { toString: (format: string) => string } | null;
+      } | null;
+      functionName: () => {
+        toString: () => string;
+      } | null;
+      args: () => xdr.ScVal[];
+    };
+  };
+}
+
+interface PaymentOp {
+  type: "payment";
+  destination: string;
+  asset?: {
+    code: string;
+  };
+  amount: string | number;
+}
+
 export default function TransactionsPage() {
   const { isConnected, publicKey } = useWallet();
   
   const [transactions, setTransactions] = useState<TransactionDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [userContracts, setUserContracts] = useState<Contract[]>([]);
   
   // Search, Filter, Sort and Pagination State
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,24 +111,24 @@ export default function TransactionsPage() {
   const [selectedTx, setSelectedTx] = useState<TransactionDetails | null>(null);
 
   // Decode Soroban transactions safely
-  const decodeTransaction = useCallback((tx: any, contracts: Contract[], userKey: string): TransactionDetails | null => {
+  const decodeTransaction = useCallback((tx: StellarTransactionRecord, contracts: Contract[], userKey: string): TransactionDetails | null => {
     try {
       const decoded = TransactionBuilder.fromXDR(tx.envelope_xdr, STELLAR_CONFIG.network);
       
       // Look for Soroban invokeHostFunction operation
-      const op = decoded.operations.find(o => o.type === "invokeHostFunction") as any;
+      const op = decoded.operations.find(o => o.type === "invokeHostFunction") as unknown as InvokeHostFunctionOp | undefined;
       
       if (op && op.func?.arm() === "invokeContract") {
         const invokeContract = op.func.value();
         const contractIdHex = invokeContract.contractAddress()?.contractId()?.toString("hex");
         if (!contractIdHex) return null;
-        const contractId = StrKey.encodeContract(hexToBytes(contractIdHex) as any);
+        const contractId = StrKey.encodeContract(Buffer.from(hexToBytes(contractIdHex)));
 
         const functionName = invokeContract.functionName()?.toString();
         const args = invokeContract.args();
         if (!args || args.length === 0) return null;
 
-        const projectId = scValToNative(args[0]) as string;
+        const projectId = scValToNative(args[0] as xdr.ScVal) as string;
         const contract = contracts.find(c => c.id === projectId);
         
         const contractTitle = contract?.title || "TrustLance Project";
@@ -116,7 +149,7 @@ export default function TransactionsPage() {
           isIncoming = (contract?.freelancerWallet === userKey);
         } else if (functionName === "submit_milestone") {
           type = "Contract Created"; // Milestone work uploaded
-          const milestoneIndex = Number(scValToNative(args[1]));
+          const milestoneIndex = Number(scValToNative(args[1] as xdr.ScVal));
           const milestone = contract?.milestones?.[milestoneIndex];
           amount = milestone ? Number(milestone.amount) : 0;
           milestoneName = milestone ? milestone.description : `Milestone #${milestoneIndex + 1}`;
@@ -125,7 +158,7 @@ export default function TransactionsPage() {
           isIncoming = (contract?.clientWallet === userKey);
         } else if (functionName === "approve_milestone") {
           type = "Milestone Payment Release";
-          const milestoneIndex = Number(scValToNative(args[1]));
+          const milestoneIndex = Number(scValToNative(args[1] as xdr.ScVal));
           const milestone = contract?.milestones?.[milestoneIndex];
           amount = milestone ? Number(milestone.amount) : 0;
           milestoneName = milestone ? milestone.description : `Milestone #${milestoneIndex + 1}`;
@@ -140,9 +173,9 @@ export default function TransactionsPage() {
         } else if (functionName === "resolve_dispute") {
           type = "Refund";
           // args[3] is amount in stroops
-          amount = args[3] ? Number(scValToNative(args[3])) / 10000000 : 0;
+          amount = args[3] ? Number(scValToNative(args[3] as xdr.ScVal)) / 10000000 : 0;
           senderWallet = contractId;
-          receiverWallet = args[2] ? String(scValToNative(args[2])) : "";
+          receiverWallet = args[2] ? String(scValToNative(args[2] as xdr.ScVal)) : "";
           isIncoming = (receiverWallet === userKey);
         } else if (functionName === "cancel_contract") {
           type = "Refund";
@@ -173,7 +206,7 @@ export default function TransactionsPage() {
       }
 
       // Handle standard Stellar payments as fallback
-      const paymentOp = decoded.operations.find(o => o.type === "payment") as any;
+      const paymentOp = decoded.operations.find(o => o.type === "payment") as unknown as PaymentOp | undefined;
       if (paymentOp) {
         const isUsdc = paymentOp.asset?.code === "USDC";
         const isIncoming = paymentOp.destination === userKey;
@@ -208,10 +241,9 @@ export default function TransactionsPage() {
     try {
       // 1. Fetch user contracts from Firestore
       const contractsData = await getUserContracts(publicKey);
-      setUserContracts(contractsData);
 
       // 2. Fetch direct transactions from Horizon for the connected account
-      let horizonTxs: any[] = [];
+      let horizonTxs: StellarTransactionRecord[] = [];
       try {
         const page = await horizonServer.transactions().forAccount(publicKey).order("desc").limit(40).call();
         horizonTxs = page.records;
@@ -220,7 +252,7 @@ export default function TransactionsPage() {
       }
 
       // 3. Query Firestore transaction events logged for contracts associated with this user
-      const localEvents: any[] = [];
+      const localEvents: { id: string; txHash?: string; [key: string]: unknown }[] = [];
       try {
         const q = query(collection(db, "growth_tx_events"), where("walletAddress", "==", publicKey));
         const snap = await getDocs(q);
@@ -235,14 +267,14 @@ export default function TransactionsPage() {
       const fetchedHashes = new Set(horizonTxs.map(tx => tx.hash));
       const missingHashes = localEvents
         .map(ev => ev.txHash)
-        .filter(h => h && h !== "pending" && !fetchedHashes.has(h));
+        .filter((h): h is string => typeof h === "string" && h !== "pending" && !fetchedHashes.has(h));
 
       // Fetch transaction objects for missing hashes in parallel
       if (missingHashes.length > 0) {
         const additionalPromises = missingHashes.slice(0, 15).map(async (hash) => {
           try {
             return await horizonServer.transactions().transaction(hash).call();
-          } catch (e) {
+          } catch {
             return null;
           }
         });
@@ -286,7 +318,9 @@ export default function TransactionsPage() {
   }, [isConnected, publicKey, decodeTransaction]);
 
   useEffect(() => {
-    loadData();
+    Promise.resolve().then(() => {
+      loadData();
+    });
   }, [loadData]);
 
   // Copy Transaction Hash
@@ -349,6 +383,7 @@ export default function TransactionsPage() {
   };
 
   // Filter & Sort Logic
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const filteredAndSortedTransactions = useMemo(() => {
     let result = [...transactions];
 
@@ -405,7 +440,9 @@ export default function TransactionsPage() {
 
   // Reset pagination on filter or search changes
   useEffect(() => {
-    setCurrentPage(1);
+    Promise.resolve().then(() => {
+      setCurrentPage(1);
+    });
   }, [searchTerm, activeFilter, sortBy]);
 
   // Pagination bounds

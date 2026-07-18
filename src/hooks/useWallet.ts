@@ -149,8 +149,9 @@ export function useWallet() {
         const access = await withTimeout(requestAccess(), 10000);
         if (access.error) throw new Error(access.error);
         address = access.address;
-      } catch (err: any) {
-        throw new Error(err.message || "Failed to retrieve address. Please unlock Freighter and grant access.");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        throw new Error(message || "Failed to retrieve address. Please unlock Freighter and grant access.");
       }
 
       // Authentication flow (challenge-response)
@@ -161,7 +162,7 @@ export function useWallet() {
         const parsed = JSON.parse(nonceText);
         if (!nonceRes.ok) throw new Error(parsed.error || "Failed to fetch nonce");
         nonce = parsed.nonce;
-      } catch (e) {
+      } catch {
         throw new Error(`Server returned non-JSON for nonce (Status ${nonceRes.status})`);
       }
 
@@ -188,8 +189,9 @@ export function useWallet() {
         } else {
           throw new Error("Invalid signature response");
         }
-      } catch (err: any) {
-        throw new Error(err.message || "Message signing rejected by user.");
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        throw new Error(message || "Message signing rejected by user.");
       }
 
       // Verify signature on backend
@@ -236,8 +238,8 @@ export function useWallet() {
       } catch {}
 
       return true;
-    } catch (err: any) {
-      const errMsg = err.message || "Failed to connect wallet";
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to connect wallet";
       toast.error(`Connection Failed: ${errMsg}`);
       setState((s) => ({ ...s, isLoading: false, error: errMsg }));
       setModalOpen(false);
@@ -295,8 +297,8 @@ export function useWallet() {
       }
 
       return signedXdr;
-    } catch (err: any) {
-      const msg = err.message || "User rejected the request";
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "User rejected the request";
       toast.error(`Signature Failed: ${msg}`);
       throw err;
     }

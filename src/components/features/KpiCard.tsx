@@ -3,9 +3,7 @@
 import { m } from 'framer-motion';
 import { useCountUp } from "@/hooks/useCountUp";
 
-const colorMap = { primary: "text-accent", secondary: "text-ink-primary", tertiary: "text-ink-secondary" };
 const bgMap = { primary: "bg-accent/10", secondary: "bg-bg-interactive", tertiary: "bg-bg-interactive" };
-const borderMap = { primary: "border-b-accent", secondary: "border-b-ink-primary", tertiary: "border-b-ink-secondary" };
 
 export function KpiCard({
   label, value, unit, sub, subIcon, accent, delay,
@@ -19,7 +17,6 @@ export function KpiCard({
   delay?: number;
 }) {
   const displayed = useCountUp(value);
-  const accentColor = colorMap[accent ?? "primary"];
   const accentBg = bgMap[accent ?? "primary"];
 
   return (
