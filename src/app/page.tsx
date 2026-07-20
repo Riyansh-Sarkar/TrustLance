@@ -3,14 +3,16 @@
 import { useState } from "react";
 import { m } from "framer-motion";
 import Link from "next/link";
-import { 
-  ArrowRight, ShieldCheck, Lock, Wallet, 
-  Terminal, Globe, 
-  Check, Sparkles, ChevronDown
+import {
+  ArrowRight, ShieldCheck, Lock, Wallet,
+  Terminal, Globe,
+  Check, Sparkles, ChevronDown, Sun, Moon
 } from "lucide-react";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 export default function Home() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const { isDarkMode, toggleDarkMode, mounted } = useDarkMode();
 
   const faqs = [
     {
@@ -33,7 +35,7 @@ export default function Home() {
 
   return (
     <div className="landing-root bg-bg-void text-ink-primary font-body-base antialiased selection:bg-accent/20 selection:text-accent min-h-screen flex flex-col">
-      
+
       {/* Top Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-bg-base/80 backdrop-blur-md border-b border-edge-neutral px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center max-w-7xl mx-auto rounded-b-[20px] shadow-sm">
         <div className="flex items-center gap-8">
@@ -49,11 +51,27 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            aria-label="Toggle dark mode"
+            onClick={toggleDarkMode}
+            className="p-2 text-ink-secondary hover:bg-bg-interactive hover:text-ink-primary transition-all rounded-full flex items-center justify-center w-9 h-9"
+          >
+            {mounted ? (
+              isDarkMode ? (
+                <Sun className="w-5 h-5 text-accent" />
+              ) : (
+                <Moon className="w-5 h-5 text-ink-secondary" />
+              )
+            ) : (
+              <div className="w-5 h-5" />
+            )}
+          </button>
           <Link href="/auth" className="text-ui-label text-ink-secondary hover:text-ink-primary transition-colors">
             Log in
           </Link>
           <Link href="/auth" className="neopop-button-teal text-ui-label px-5 py-2.5 rounded-xl font-medium">
-            Launch App
+            Connect Wallet
           </Link>
         </div>
       </nav>
@@ -150,8 +168,8 @@ export default function Home() {
             </div>
             <div className="space-y-1.5 flex-1">
               {["Overview", "Jobs", "Contracts", "Payments", "Analytics", "Settings"].map((lbl, idx) => (
-                <div 
-                  key={lbl} 
+                <div
+                  key={lbl}
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${idx === 0 ? "text-accent bg-accent-glow border-l-2 border-accent" : "text-ink-secondary"}`}
                 >
                   <div className="w-3.5 h-3.5 bg-current opacity-30 rounded-sm" />
@@ -396,8 +414,8 @@ await escrow.deposit(USDC, 15000);`}</code>
 
           <div className="space-y-4">
             {faqs.map((faq, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="border border-edge-neutral rounded-[20px] bg-bg-void/40 overflow-hidden transition-all duration-300"
               >
                 <button

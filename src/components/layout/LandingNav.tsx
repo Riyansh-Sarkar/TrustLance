@@ -1,44 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
 import { m } from 'framer-motion';
 import { Sun, Moon } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
-
-const getTheme = () => {
-  if (typeof window === "undefined") return false;
-  const stored = localStorage.getItem("theme");
-  return stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-};
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 export function LandingNav() {
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-
-  const isDarkMode = useSyncExternalStore(
-    (callback) => {
-      window.addEventListener("storage", callback);
-      const mql = window.matchMedia("(prefers-color-scheme: dark)");
-      mql.addEventListener("change", callback);
-      return () => {
-        window.removeEventListener("storage", callback);
-        mql.removeEventListener("change", callback);
-      };
-    },
-    getTheme,
-    () => false
-  );
-
-  const toggleDarkMode = () => {
-    const next = !isDarkMode;
-    document.documentElement.classList.toggle("dark", next);
-    localStorage.setItem("theme", next ? "dark" : "light");
-    window.dispatchEvent(new Event("storage"));
-  };
+  const { isDarkMode, toggleDarkMode, mounted } = useDarkMode();
 
   return (
     <nav className="w-full top-0 sticky z-50 bg-bg-void/90 backdrop-blur-md border-b divider">
@@ -78,10 +47,11 @@ export function LandingNav() {
           className="flex items-center gap-6"
         >
           <button type="button" 
+            aria-label="Toggle dark mode"
             onClick={toggleDarkMode} 
-            className="text-ink-secondary hover:text-ink-primary transition-colors"
+            className="p-2 text-ink-secondary hover:bg-bg-interactive hover:text-ink-primary transition-all rounded-full flex items-center justify-center w-9 h-9"
           >
-            {mounted ? (isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />) : <div className="w-5 h-5" />}
+            {mounted ? (isDarkMode ? <Sun className="w-5 h-5 text-accent" /> : <Moon className="w-5 h-5 text-ink-secondary" />) : <div className="w-5 h-5" />}
           </button>
           <Link href="/auth" className="hidden sm:block text-ui-label text-ink-secondary hover:text-ink-primary transition-colors">
             Login
