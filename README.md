@@ -105,8 +105,11 @@ Milestone-based escrow smart contract for Soroban (Stellar), tested end-to-end o
 
 <img width="2553" height="1058" alt="Screenshot 2026-07-20 101646" src="https://github.com/user-attachments/assets/369dc209-7347-4023-851c-f632671dc9fb" />
 
-## Mobile Responsive UI 
-<img width="694" height="1225" alt="image" src="https://github.com/user-attachments/assets/b967e2c7-e7a0-4f57-bdf4-207bce46317a" />
+## 📱 Mobile Responsive UI
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b967e2c7-e7a0-4f57-bdf4-207bce46317a" alt="TrustLance Mobile UI" width="260">
+</p>
 
 ## 📦 Smart Contract Folder Structure
 
