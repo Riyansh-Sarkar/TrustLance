@@ -14,7 +14,9 @@
 </div>
 
 ---
-<img width="2530" height="1361" alt="image" src="https://github.com/user-attachments/assets/fa271b75-615c-45b0-ae9a-941a6407b7eb" />
+<img width="2525" height="1170" alt="image" src="https://github.com/user-attachments/assets/2c8e05a7-8062-4ccc-ae53-cec12489e582" />
+
+<img width="2556" height="1309" alt="image" src="https://github.com/user-attachments/assets/e5b4ab3a-52f5-43d4-8ad0-06a2c6250bdf" />
 
 
 ## 🌟 What is TrustLance?
