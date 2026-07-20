@@ -14,7 +14,9 @@
 </div>
 
 ---
-<img width="2530" height="1361" alt="image" src="https://github.com/user-attachments/assets/fa271b75-615c-45b0-ae9a-941a6407b7eb" />
+<img width="2525" height="1170" alt="image" src="https://github.com/user-attachments/assets/2c8e05a7-8062-4ccc-ae53-cec12489e582" />
+
+<img width="2556" height="1309" alt="image" src="https://github.com/user-attachments/assets/e5b4ab3a-52f5-43d4-8ad0-06a2c6250bdf" />
 
 
 ## 🌟 What is TrustLance?
@@ -62,7 +64,220 @@ At Level 3, TrustLance ships a working mini dApp on Stellar Testnet: a deployed 
 > USDC is a SAC wrapping the classic asset issued by the address above — the G-address is used only for building `change_trust` trustline transactions, never for Soroban token calls.
 
 ---
+# EscrowContract — Testnet Testing Report
 
+Milestone-based escrow smart contract for Soroban (Stellar), tested end-to-end on **Testnet**.
+
+---
+
+## 📋 Contract Info
+
+| Item | Value |
+|---|---|
+| **Network** | Testnet |
+| **🔐 Escrow Contract ID** | `CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG` |
+| **💎 Token (Native XLM)** | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
+
+---
+
+## ✅ Test Results — 7/7 Passed
+
+| # | Function | Description | Status |
+|---|-----------|-------------|:---:|
+| 1 | `initialize` | Creates escrow, pulls funds from client into contract | ✅ |
+| 2 | `get_state` | Reads back full escrow state | ✅ |
+| 3 | `submit_milestone` | Freelancer submits milestone for review | ✅ |
+| 4 | `approve_milestone` | Client approves, releases payment to freelancer | ✅ |
+| 5 | `flag_dispute` | Client/freelancer flags project as disputed | ✅ |
+| 6 | `resolve_dispute` | Admin resolves dispute, releases funds | ✅ |
+| 7 | `cancel_contract` (negative) | Rejects cancel on progressed project | ✅ |
+| 7 | `cancel_contract` (positive) | Refunds full amount on untouched project | ✅ |
+
+📸 *Test screenshots:*
+<img width="2264" height="922" alt="Screenshot 2026-07-20 101523" src="https://github.com/user-attachments/assets/eef4ab94-7570-43d4-aa71-ac08bd513238" />
+<img width="2261" height="526" alt="Screenshot 2026-07-20 101629" src="https://github.com/user-attachments/assets/4fea6ca6-1377-42d5-80b4-fee4ea558634" />
+
+
+
+---
+
+## 🔁 CI/CD
+
+<img width="2553" height="1058" alt="Screenshot 2026-07-20 101646" src="https://github.com/user-attachments/assets/369dc209-7347-4023-851c-f632671dc9fb" />
+
+## Mobile Responsive UI 
+<img width="694" height="1225" alt="image" src="https://github.com/user-attachments/assets/b967e2c7-e7a0-4f57-bdf4-207bce46317a" />
+
+## 📦 Smart Contract Folder Structure
+
+```text
+contracts/
+│
+├── escrow/                                   # Main Soroban Escrow Smart Contract
+│   ├── src/
+│   │   ├── lib.rs                            # Milestone escrow contract logic
+│   │   └── test.rs                           # Unit tests for escrow contract
+│   ├── Cargo.toml                            # Rust package configuration
+│   ├── Cargo.lock
+│   ├── rust-toolchain.toml
+│   └── target/                               # Build artifacts
+│
+└── liquidity_pool/                           # Liquidity Pool Smart Contract
+    ├── src/
+    │   ├── lib.rs                            # Liquidity pool implementation
+    │   └── test.rs                           # Contract tests
+    ├── Cargo.toml
+    ├── Cargo.lock
+    └── rust-toolchain.toml
+```
+
+---
+
+## 💻 Frontend Structure
+
+```text
+src/
+│
+├── app/                                      # Next.js App Router
+│   ├── page.tsx                              # Landing Page
+│   ├── layout.tsx                            # Root Layout
+│   ├── globals.css                           # Global Styles
+│   │
+│   ├── auth/                                 # Wallet onboarding
+│   ├── api/                                  # API Routes
+│   │   └── auth/
+│   ├── dashboard/                            # Main Dashboard
+│   ├── features/
+│   ├── network/
+│   ├── pricing/
+│   ├── privacy/
+│   ├── terms/
+│   └── help/
+│
+├── components/                               # Shared UI Components
+│
+├── constants/
+│   └── stellar.ts                            # Network & Contract Constants
+│
+├── hooks/
+│   ├── useWallet.ts                          # Freighter wallet connection
+│   ├── useEscrow.ts                          # Escrow contract transactions
+│   ├── useAddUsdcTrustline.ts                # USDC trustline management
+│   ├── useLiquidityPoolInfo.ts               # Liquidity pool data
+│   ├── useProfile.ts                         # User profile management
+│   ├── useAnalytics.ts                       # Dashboard analytics
+│   ├── useDarkMode.ts                        # Theme management
+│   └── useCountUp.ts                         # UI animations
+│
+├── lib/
+│   ├── auth/                                 # Authentication helpers
+│   ├── firebase/                             # Firebase services
+│   ├── contracts/
+│   │   └── escrow/                           # Escrow contract helper wrappers
+│   │
+│   ├── stellar/
+│   │   ├── client.ts                         # Soroban RPC client
+│   │   ├── sorobanView.ts                    # Read-only contract queries
+│   │   ├── sorobanSwap.ts                    # Swap helpers
+│   │   ├── swap.ts                           # Transaction builders
+│   │   ├── anchor.ts                         # Asset helpers
+│   │   ├── explorer.ts                       # Explorer utilities
+│   │   └── utils.ts                          # Stellar helper utilities
+│   │
+│   ├── firebase.ts
+│   ├── utils.ts
+│   │
+│   └── prices/
+│       └── xlmPrice.ts                       # Live XLM price utilities
+│
+└── types/
+    ├── index.ts
+    └── growth.ts
+```
+
+---
+
+## 🔗 Smart Contract ↔ Frontend Integration Mapping
+
+```text
+                    Freighter Wallet
+                           │
+                           ▼
+               src/hooks/useWallet.ts
+                           │
+                           ▼
+               src/hooks/useEscrow.ts
+                           │
+                           ▼
+             src/lib/stellar/client.ts
+                           │
+                           ▼
+                  Soroban RPC Server
+                           │
+                           ▼
+         contracts/escrow/src/lib.rs
+                           │
+                           ▼
+              Escrow Smart Contract
+                           │
+                           ▼
+                  Transaction Result
+                     ┌───────────────┐
+                     │               │
+                     ▼               ▼
+         Dashboard UI Refresh   Firestore Metadata
+                                     │
+                                     ▼
+                          src/lib/firebase/
+```
+## 🔗 Frontend ↔ Smart Contract Integration
+
+The frontend communicates directly with the deployed **Soroban Escrow Smart Contract** using the **Stellar SDK**, **Freighter Wallet**, and **Soroban RPC**. Financial transactions are executed on-chain, while application metadata is synchronized with Firebase Firestore.
+
+| Frontend Module | Responsibility |
+|-----------------|---------------|
+| `src/hooks/useWallet.ts` | Connects the user's **Freighter Wallet**, manages wallet state, and signs blockchain transactions. |
+| `src/hooks/useEscrow.ts` | Main integration layer responsible for creating contracts, funding escrow, milestone submission, approvals, payment releases, refunds, and contract lifecycle management. |
+| `src/lib/stellar/client.ts` | Initializes the **Soroban RPC client**, builds transactions, simulates contract calls, and submits signed transactions to the Stellar Testnet. |
+| `src/lib/stellar/sorobanView.ts` | Executes read-only contract queries without requiring transaction signing. |
+| `src/constants/stellar.ts` | Stores Stellar network configuration, contract IDs, RPC endpoints, asset information, and shared blockchain constants. |
+| `src/lib/contracts/escrow/` | Shared helper functions and reusable utilities for interacting with the escrow smart contract. |
+| `src/lib/firebase/` | Synchronizes off-chain metadata including jobs, users, contracts, applications, milestones, and transaction history with Firestore. |
+
+---
+
+## 📜 Smart Contract Function Mapping
+
+| Smart Contract Function (Rust) | Frontend Caller | Purpose |
+|--------------------------------|-----------------|---------|
+| `initialize_contract()` | `src/hooks/useEscrow.ts` | Initializes a new escrow contract instance. |
+| `create_contract()` | `src/hooks/useEscrow.ts` | Creates a milestone-based escrow contract after a freelancer is hired. |
+| `fund_contract()` | `src/hooks/useEscrow.ts` | Locks the client's USDC into the escrow smart contract. |
+| `submit_milestone()` | `src/hooks/useEscrow.ts` | Allows the freelancer to submit completed milestone work. |
+| `approve_milestone()` | `src/hooks/useEscrow.ts` | Allows the client to approve submitted work. |
+| `release_payment()` | `src/hooks/useEscrow.ts` | Releases escrowed USDC from the smart contract to the freelancer. |
+| `refund_contract()` | `src/hooks/useEscrow.ts` | Returns escrowed funds back to the client if required. |
+| `close_contract()` | `src/hooks/useEscrow.ts` | Marks the contract as completed and closes the escrow. |
+| Read-only Contract Methods | `src/lib/stellar/sorobanView.ts` | Fetches contract state, milestone status, balances, and contract metadata without sending transactions. |
+
+---
+
+## 🔗 Contract ↔ Frontend Function Mapping
+
+| Smart Contract (Rust) | Frontend File | User Action |
+|------------------------|---------------|------------|
+| `initialize_contract()` | `src/hooks/useEscrow.ts` | Initializes a new escrow instance. |
+| `create_contract()` | `src/hooks/useEscrow.ts` | Client creates an escrow contract after hiring a freelancer. |
+| `fund_contract()` | `src/hooks/useEscrow.ts` | Client deposits and locks USDC into escrow. |
+| `submit_milestone()` | `src/hooks/useEscrow.ts` | Freelancer submits completed milestone work for review. |
+| `approve_milestone()` | `src/hooks/useEscrow.ts` | Client reviews and approves the submitted milestone. |
+| `release_payment()` | `src/hooks/useEscrow.ts` | Client releases escrowed payment to the freelancer. |
+| `refund_contract()` | `src/hooks/useEscrow.ts` | Client requests a refund when applicable. |
+| `close_contract()` | `src/hooks/useEscrow.ts` | Finalizes and closes the escrow contract. |
+| Contract View Functions | `src/lib/stellar/sorobanView.ts` | Reads on-chain contract state without modifying blockchain data. |
+| Wallet Authentication | `src/hooks/useWallet.ts` | Connects and authenticates users through Freighter Wallet. |
+| Soroban RPC Communication | `src/lib/stellar/client.ts` | Builds, simulates, signs, and submits Stellar transactions. |
+| Network & Contract Configuration | `src/constants/stellar.ts` | Provides deployed contract IDs, network settings, RPC URLs, and asset constants used across the application. |
 
 
 ## ⚠️ Core Problem
