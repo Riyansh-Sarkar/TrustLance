@@ -62,8 +62,49 @@ At Level 3, TrustLance ships a working mini dApp on Stellar Testnet: a deployed 
 > USDC is a SAC wrapping the classic asset issued by the address above — the G-address is used only for building `change_trust` trustline transactions, never for Soroban token calls.
 
 ---
+# EscrowContract — Testnet Testing Report
+
+Milestone-based escrow smart contract for Soroban (Stellar), tested end-to-end on **Testnet**.
+
+---
+
+## 📋 Contract Info
+
+| Item | Value |
+|---|---|
+| **Network** | Testnet |
+| **🔐 Escrow Contract ID** | `CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG` |
+| **💎 Token (Native XLM)** | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
+
+---
+
+## ✅ Test Results — 7/7 Passed
+
+| # | Function | Description | Status |
+|---|-----------|-------------|:---:|
+| 1 | `initialize` | Creates escrow, pulls funds from client into contract | ✅ |
+| 2 | `get_state` | Reads back full escrow state | ✅ |
+| 3 | `submit_milestone` | Freelancer submits milestone for review | ✅ |
+| 4 | `approve_milestone` | Client approves, releases payment to freelancer | ✅ |
+| 5 | `flag_dispute` | Client/freelancer flags project as disputed | ✅ |
+| 6 | `resolve_dispute` | Admin resolves dispute, releases funds | ✅ |
+| 7 | `cancel_contract` (negative) | Rejects cancel on progressed project | ✅ |
+| 7 | `cancel_contract` (positive) | Refunds full amount on untouched project | ✅ |
+
+📸 *Test screenshots:*
+<img width="2264" height="922" alt="Screenshot 2026-07-20 101523" src="https://github.com/user-attachments/assets/eef4ab94-7570-43d4-aa71-ac08bd513238" />
+<img width="2261" height="526" alt="Screenshot 2026-07-20 101629" src="https://github.com/user-attachments/assets/4fea6ca6-1377-42d5-80b4-fee4ea558634" />
 
 
+
+---
+
+## 🔁 CI/CD
+
+<img width="2553" height="1058" alt="Screenshot 2026-07-20 101646" src="https://github.com/user-attachments/assets/369dc209-7347-4023-851c-f632671dc9fb" />
+
+## Mobile Responsive UI 
+<img width="694" height="1225" alt="image" src="https://github.com/user-attachments/assets/b967e2c7-e7a0-4f57-bdf4-207bce46317a" />
 
 ## ⚠️ Core Problem
 
