@@ -37,6 +37,14 @@ Instead of trusting clients or freelancers, users trust **immutable blockchain s
 At Level 3, TrustLance ships a working mini dApp on Stellar Testnet: a deployed escrow Soroban contract, wallet-native authentication via Freighter, a full milestone-based job → contract → escrow → payout workflow wired to Firebase for metadata, and a premium Next.js dashboard across Client and Freelancer roles.
 
 ---
+# Smart Contract Details
+
+| Property | Value |
+|---|---|
+| **Contract ID** | `CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG` |
+| **Network** | Stellar Testnet |
+| **Explorer** | https://stellar.expert/explorer/testnet/contract/CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG |
+
 ## 🚀 Deployed Contracts (Stellar Testnet)
 
 **Network:** Stellar Testnet · **Passphrase:** `Test SDF Network ; September 2015`
