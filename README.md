@@ -714,6 +714,30 @@ Never show a generic `"Unknown Error"`. Always explain what happened:
 11. Preserve the milestone-based escrow workflow and role-based permissions throughout the application.
 
 ---
+## 🏁 Getting Started
+
+### Prerequisites
+* Node.js & pnpm
+* Rust toolchain (for Soroban contracts)
+* Stellar CLI
+
+### Installation & Deployment
+1. Clone the repo & install packages:
+   ```sh
+   git clone https://github.com/Riyansh-Sarkar/TrustLance
+   cd TrustLance
+   pnpm install
+   ```
+2. Set up environment variables (`cp .env.example .env.local`) and run the local server (`pnpm dev`).
+3. Build and deploy the smart contract to Testnet:
+   ```bash
+   cd contracts/escrow
+   cargo check --target wasm32-unknown-unknown
+   cargo test
+   stellar contract deploy --source admin --network testnet --wasm target/wasm32-unknown-unknown/release/escrow.wasm
+   ```
+
+---
 
 ## 🌌 Final Vision
 
