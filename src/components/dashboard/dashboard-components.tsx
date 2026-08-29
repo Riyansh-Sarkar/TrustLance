@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { toast } from "sonner";
 import type { Contract, ActivityItem } from "@/types";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { formatWalletAddress } from "@/lib/utils";
 
 const stagger = {
   container: { animate: { transition: { staggerChildren: 0.07 } } },
@@ -65,7 +66,7 @@ export function DashboardHeader({ isConnected, publicKey, today, openModal, setR
           </button>
         ) : (
           <div className="px-3 py-2 bg-accent-glow border border-accent/20 rounded-xl text-accent font-mono-data text-xs font-medium flex items-center h-[38px]">
-            Connected as {publicKey?.substring(0, 6)}…{publicKey?.substring(publicKey.length - 4)}
+            Connected as {formatWalletAddress(publicKey)}
           </div>
         )}
         <button

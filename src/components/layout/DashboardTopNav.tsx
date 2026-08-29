@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useDarkMode } from "@/hooks/useDarkMode";
 import { Logo } from "@/components/ui/Logo";
 import { FriendbotButton } from "@/components/FriendbotButton";
+import { formatWalletAddress } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
 const ProfileModal = dynamic(
@@ -218,7 +219,7 @@ export function DashboardTopNav() {
               <span className="font-ui-label text-sm text-ink-primary font-semibold hidden lg:block">
                 {profile?.username
                   ? profile.username
-                  : publicKey ? `${publicKey.slice(0, 4)}&hellip;${publicKey.slice(-4)}` : "Connected"}
+                  : publicKey ? formatWalletAddress(publicKey) : "Connected"}
               </span>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-ink-secondary hidden lg:block transition-transform duration-200 ${
@@ -243,7 +244,7 @@ export function DashboardTopNav() {
                       {profile?.username || "Wallet Connected"}
                     </p>
                     <p className="font-mono-data text-[10px] text-ink-tertiary mt-0.5 truncate">
-                      {publicKey ? `${publicKey.slice(0, 8)}&hellip;${publicKey.slice(-6)}` : ""}
+                      {formatWalletAddress(publicKey)}
                     </p>
                   </div>
 

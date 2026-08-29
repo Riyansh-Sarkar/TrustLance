@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { ErrorBoundary } from "@/components/providers/error-boundary";
+import { formatWalletAddress } from "@/lib/utils";
 
 const ProfileModal = dynamic(
   () => import("@/components/ProfileModal").then((mod) => mod.ProfileModal),
@@ -110,7 +111,7 @@ export default function AccountPage() {
               <div className="mt-4">
                 <p className="font-mono-data text-[10px] text-ink-tertiary uppercase tracking-wider mb-1 font-medium">Connected Wallet</p>
                 <p className="font-mono-data text-xs font-semibold text-ink-secondary truncate">
-                  {publicKey ? `${publicKey.slice(0, 8)}...${publicKey.slice(-6)}` : "None"}
+                  {publicKey ? formatWalletAddress(publicKey) : "None"}
                 </p>
               </div>
               
