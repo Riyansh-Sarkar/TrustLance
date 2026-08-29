@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     question: "Which networks are supported?",
-    answer: "Currently, TrustLance is deployed on the Stellar Testnet for beta testing. Mainnet support will be rolling out soon. Please ensure your Freighter wallet is connected to the correct network."
+    answer: "Currently, TrustLance is deployed on the Stellar Testnet for beta testing. Mainnet support will be rolling out soon. Please ensure your Stellar wallet is connected to the correct network."
   },
   {
     question: "How are fees calculated?",

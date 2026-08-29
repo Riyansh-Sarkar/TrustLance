@@ -29,7 +29,7 @@ export default function Home() {
     },
     {
       q: "What wallets are supported?",
-      a: "We support major Stellar wallets including Freighter, Albedo, and Rondo. You can connect your wallet in a single click."
+      a: "We support Stellar-compatible wallets including Freighter, xBull, Albedo, Rabet, Hana, and LOBSTR. You can connect your wallet in a single click."
     }
   ];
 

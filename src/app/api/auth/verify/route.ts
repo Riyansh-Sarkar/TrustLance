@@ -1,8 +1,29 @@
 import { NextResponse } from 'next/server';
-import { Keypair } from '@stellar/stellar-sdk';
+import { Keypair, Networks, Transaction, TransactionBuilder } from '@stellar/stellar-sdk';
 import { createHash } from 'crypto';
 import { rateLimit, rateLimitHeaders } from '@/lib/auth/rate-limit';
 import { verifySignedNonce, createFirebaseCustomToken } from '@/lib/auth/jwt';
+
+const AUTH_MANAGE_DATA_NAME = 'TrustLance Auth';
+
+function verifyAuthTransaction(publicKey: string, nonce: string, authTransactionXdr: string): boolean {
+  const tx = TransactionBuilder.fromXDR(authTransactionXdr, Networks.TESTNET);
+  if (!(tx instanceof Transaction) || tx.source !== publicKey || tx.operations.length !== 1) {
+    return false;
+  }
+
+  const operation = tx.operations[0];
+  if (operation.type !== 'manageData' || operation.name !== AUTH_MANAGE_DATA_NAME) {
+    return false;
+  }
+
+  if (!Buffer.isBuffer(operation.value) || operation.value.toString('utf8') !== nonce || tx.signatures.length === 0) {
+    return false;
+  }
+
+  const keypair = Keypair.fromPublicKey(publicKey);
+  return tx.signatures.some((signature) => keypair.verify(tx.hash(), signature.signature()));
+}
 
 export async function POST(req: Request) {
   const rl = rateLimit(req);
@@ -17,9 +38,9 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { publicKey, signature, nonce } = await req.json();
+    const { publicKey, signature, nonce, authTransactionXdr } = await req.json();
 
-    if (!publicKey || !signature || !nonce) {
+    if (!publicKey || !nonce || (!signature && !authTransactionXdr)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -60,6 +81,23 @@ export async function POST(req: Request) {
 
     if (signature === "mock_signature_for_playwright" && process.env.NODE_ENV !== "production") {
       // Bypass signature verification for e2e tests
+    } else if (authTransactionXdr) {
+      let isValid = false;
+      try {
+        isValid = verifyAuthTransaction(publicKey, nonce, authTransactionXdr);
+      } catch {
+        return NextResponse.json(
+          { error: 'Invalid auth transaction' },
+          { status: 400 }
+        );
+      }
+
+      if (!isValid) {
+        return NextResponse.json(
+          { error: 'Invalid auth transaction signature' },
+          { status: 401 }
+        );
+      }
     } else {
       let signatureBuffer: Buffer;
       try {

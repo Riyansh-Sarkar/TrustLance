@@ -57,7 +57,7 @@ export function CustomWalletModal({ isOpen, onClose, wallets, onSelect }: Custom
             {/* Content */}
             <div className="p-8 bg-bg-base space-y-6">
               <p className="font-ui-label text-ink-secondary text-sm font-bold uppercase tracking-widest border-l-4 border-accent pl-4">
-                Select a Stellar wallet to continue. Mobile users select WalletConnect.
+                Select a Stellar-compatible wallet to continue.
               </p>
 
               <div className="flex flex-col gap-4">

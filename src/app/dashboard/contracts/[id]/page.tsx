@@ -174,7 +174,7 @@ export default function ContractDetailPage() {
     approvingMilestoneRef.current = true;
 
     console.log("=== PRE-APPROVAL DIAGNOSTIC LOG ===");
-    console.log("Connected Freighter wallet:", publicKey);
+    console.log("Connected Stellar wallet:", publicKey);
     console.log("Transaction signer:", publicKey);
     console.log("Client wallet from Firestore:", contract.clientWallet);
     console.log("Freelancer wallet from Firestore:", contract.freelancerWallet);
