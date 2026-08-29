@@ -60,10 +60,6 @@ Instead of trusting clients or freelancers, users trust **immutable blockchain s
 | **Production-Ready Architecture**       |         ✅ Complete | 🏗️ Next.js, Firebase, Freighter, Stellar SDK and Soroban architecture                                                                               |
 | **Demo Video — 1–2 Minutes**            |      ✅ Complete   | 🎥 [View live demo](https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing)                                                                     |
 
-> **Submission Status:** ⚠️ **Core Level 3 requirements implemented; final revisions required**
->
-> TrustLance includes a live deployment, deployed Soroban smart contract, verified on-chain contract interaction, advanced milestone escrow workflow, frontend integration, Freighter signing, responsive UI, contract and frontend tests, error handling, transaction tracking and CI/CD automation. Before final resubmission, add Soroban event listening, correct the README documentation and include the 1–2 minute demo video link.
-
 ---
 # Smart Contract Details
 
