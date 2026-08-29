@@ -31,34 +31,52 @@
 Instead of trusting clients or freelancers, users trust **immutable blockchain smart contracts**. The project is built entirely around **milestone-based escrow payments**.
 
 ---
+## 🎥 TrustLance — Demo
 
-## 🏆 Stellar Journey to Master
+https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing
 
-## ✅ Level 3 Submission Checklist
+## 🔗 Project Resources
 
-> All verified Level 3 deliverables for TrustLance are documented below.
+| Resource                            | Link                                                                                                                                                                       |
+| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GitHub Repository**               | 📂 [View TrustLance Repository](https://github.com/Riyansh-Sarkar/TrustLance)                                                                                              |
+| **Live Application**                | 🌐 [Launch TrustLance](https://trust-lance-five.vercel.app/)                                                                                                               |
+| **Demo Video**                      | 🎥 [Watch TrustLance Demo](https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing)                                                             |
+| **Monitoring Dashboard**            | 📊 [Open Analytics Dashboard](https://trust-lance-five.vercel.app/dashboard/analytics)                                                                                     |
+| **Analytics & Monitoring**          | 📈 [View Analytics Section](https://github.com/Riyansh-Sarkar/TrustLance#-analytics)                                                                                       |
+| **Smart Contract Deployment**       | 🔗 [View Deployed Contract](https://stellar.expert/explorer/testnet/contract/CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG)                                     |
+| **Verified Contract Interaction**   | 🔍 [View Testnet Transaction](https://stellar.expert/explorer/testnet/tx/aac03092f84f26d43a194b6e7631a537d87887efc096336727a2b9b6245f4d07)                                 |
+| **User Feedback Form**              | 📝 [Open User Feedback Form](https://forms.gle/dRnduvqg7TYt6eU96)                                                                                                          |
+| **10+ User Testing & Feedback**     | 👥 [View Verified User Responses](https://docs.google.com/spreadsheets/d/1QzTLGm0k9ioJwqTkJEcI66oB8eY-i50d/edit?usp=sharing&ouid=117492014114035182400&rtpof=true&sd=true) |
+| **Feedback & Improvements Summary** | 💬 [View Feedback Improvements](https://github.com/Riyansh-Sarkar/TrustLance#-feedback--improvements---level-4)                                                            |
 
-| **Requirement**                         |         **Status** | **Evidence / Verification**                                                                                                                          |
-| --------------------------------------- | -----------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **10+ Meaningful Git Commits**          |         ✅ Complete | Verify through the [TrustLance GitHub commit history](https://github.com/Riyansh-Sarkar/TrustLance/commits/main/)                                    |
-| **Live Deployed Application**           |         ✅ Complete | 🌐 [Launch TrustLance](https://trust-lance-five.vercel.app/)                                                                                         |
-| **Advanced Soroban Smart Contract**     |         ✅ Complete | 🔐 Milestone escrow, role authorization, disputes, refunds and token transfers implemented                                                           |
-| **Inter-Contract Communication**        |         ✅ Complete | 🔗 Escrow communicates with Stellar token contracts through Soroban `token::Client`                                                                  |
-| **Smart Contract Deployment**           |         ✅ Complete | Contract ID: `CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG`                                                                              |
-| **Verified Contract Interaction**       |         ✅ Complete | 🔎 [View Transaction on Stellar Expert](https://stellar.expert/explorer/testnet/tx/aac03092f84f26d43a194b6e7631a537d87887efc096336727a2b9b6245f4d07) |
-| **Complete Escrow Workflow**            |         ✅ Complete | 🔐 Initialize/Fund → Submit Milestone → Approve → Release / Dispute / Cancel                                                                         |
-| **Frontend–Contract Integration**       |         ✅ Complete | ⚙️ Contract functions are connected through [`useEscrow.ts`](https://github.com/Riyansh-Sarkar/TrustLance/blob/main/src/hooks/useEscrow.ts)          |
-| **Freighter Wallet Signing**            |         ✅ Complete | 👛 Wallet authentication, address retrieval and transaction signing implemented                                                                      |
-| **Transaction Status Tracking**         |         ✅ Complete | ⏳ Signing → Submitting → Success / Failure states displayed                                                                                          |
-| **Error Handling & Loading States**     |         ✅ Complete | 🛡️ Wallet, balance, authorization, contract-state and transaction errors handled                                                                    |
-| **Smart Contract Tests**                |         ✅ Complete | 🧪 Escrow and liquidity-pool contract test suites included                                                                                           |
-| **Frontend Tests**                      |         ✅ Complete | 🧪 Unit, Firestore Rules and Playwright E2E tests included                                                                                           |
-| **3+ Passing Tests**                    |         ✅ Complete | ✅ More than three smart-contract tests implemented                                                                                                   |
-| **Mobile Responsive Experience**        |         ✅ Complete | 📱 [View Mobile Responsive UI](https://github.com/Riyansh-Sarkar/TrustLance#-mobile-responsive-ui)                                                   |
-| **CI/CD Pipeline**                      |         ✅ Complete | ⚙️ GitHub Actions runs linting, type-checking, testing, builds and contract compilation                                                              |
-| **CI/CD Evidence**                      |         ✅ Complete | 🔄                                                                         |
-| **Production-Ready Architecture**       |         ✅ Complete | 🏗️ Next.js, Firebase, Freighter, Stellar SDK and Soroban architecture                                                                               |
-| **Demo Video — 1–2 Minutes**            |      ✅ Complete   | 🎥 [View live demo](https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing)                                                                     |
+
+## ✅ Level 4 Submission Checklist
+
+[svg](https://github.com/Riyansh-Sarkar/TrustLance#-level-4-submission-checklist)
+
+All required Level 4 deliverables have been completed and verified below.
+
+| **Requirement**                           | **Status** | **Evidence / Verification**                                                                                                                                            |
+| ----------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Public GitHub Repository**              | ✅ Complete | 📂 [View TrustLance Repository](https://github.com/Riyansh-Sarkar/TrustLance)                                                                                          |
+| **Complete README Documentation**         | ✅ Complete | 📚 [View TrustLance README](https://github.com/Riyansh-Sarkar/TrustLance#readme)                                                                                       |
+| **15+ Meaningful Git Commits**            | ✅ Complete | 🧩 [Verify TrustLance Commit History](https://github.com/Riyansh-Sarkar/TrustLance/commits/main/)                                                                      |
+| **Live Deployed Application**             | ✅ Complete | 🌐 [Launch TrustLance](https://trust-lance-five.vercel.app/)                                                                                                           |
+| **Smart Contract Deployment**             | ✅ Complete | 🔗 Contract ID: `CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG`                                                                                             |
+| **Contract Interaction Verification**     | ✅ Complete | 🔍 [View Testnet Transaction](https://stellar.expert/explorer/testnet/tx/aac03092f84f26d43a194b6e7631a537d87887efc096336727a2b9b6245f4d07)                             |
+| **Product UI Screenshots**                | ✅ Complete | 🖥️ TrustLance product interface screenshots are included in the README                                                                                                |
+| **Mobile Responsive Design**              | ✅ Complete | 📱 [View Mobile Responsive UI](https://github.com/Riyansh-Sarkar/TrustLance#-mobile-responsive-ui)                                                                     |
+| **Analytics and Monitoring Setup**        | ✅ Complete | 📈 [View Analytics Implementation](https://github.com/Riyansh-Sarkar/TrustLance/tree/main/src/app/dashboard/analytics)                                                 |
+| **Demo Video**                            | ✅ Complete | 🎥 [Watch TrustLance Demo](https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing)                                                         |
+| **Proof of 10+ User Wallet Interactions** | ✅ Complete | 👥 10+ Stellar Testnet wallet interactions were recorded during structured user testing                                                                                |
+| **User Feedback Form**                    | ✅ Complete | 📝 A structured feedback form was created to collect usability issues, improvement suggestions, ratings, wallet addresses, and recommendations                         |
+| **User Feedback Responses**               | ✅ Complete | 📊 10+ user responses were collected from verified Stellar Testnet participants                                                                                        |
+| **Basic User Feedback Summary**           | ✅ Complete | 💬 Feedback was reviewed and implemented through multi-wallet support, clean wallet-address formatting, dark mode, mobile responsiveness, and reliability improvements |
+
+> **Submission Status:** ✅ **All Level 4 requirements completed**
+>
+> TrustLance includes a public repository, complete documentation, 15+ meaningful commits, a live deployment, a deployed Stellar Soroban contract, responsive product UI, analytics and monitoring, a working demo video, 10+ Stellar Testnet wallet interactions, a structured feedback form, collected user responses, and documented feedback-driven improvements.
 
 ---
 # 💬 Feedback & Improvements - Level 4 
