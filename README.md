@@ -397,7 +397,7 @@ NEXT_PUBLIC_EXPLORER_BASE_URL=https://stellar.expert/explorer/testnet
 ## 📦 Project Structure
 
 ```
-trustlance/
+TrustLance/
 ├── contracts/
 │   └── escrow/
 │       └── src/
@@ -445,29 +445,90 @@ trustlance/
 ```
 
 ---
-
-
 ### Authentication Flow
 
-```
-Connect Freighter
-        ↓
-Wallet Address
-        ↓
-Check Firestore
-        ↓
-   Existing Profile?
-   ┌────────┴────────┐
-  YES                NO
-   │                  │
-Dashboard        Create Profile
-                       ↓
-                  Choose Role
-                       ↓
-                  Dashboard
+```mermaid
+flowchart TD
+    A(["User opens TrustLance"]) --> B["Click Connect Wallet"]
+    B --> C{"Is Freighter installed?"}
+
+    C -->|No| C1["Show Install Freighter message"]
+    C1 --> C2(["Open Freighter download page"])
+
+    C -->|Yes| D["Request wallet access"]
+    D --> E{"Access approved?"}
+
+    E -->|No| E1["Show connection rejected error"]
+    E1 --> B
+
+    E -->|Yes| F["Retrieve wallet address"]
+    F --> G["Request authentication nonce"]
+    G --> H["Sign nonce with Freighter"]
+    H --> I["Verify signature on backend"]
+    I --> J{"Signature valid?"}
+
+    J -->|No| J1["Reject authentication and show error"]
+    J1 --> B
+
+    J -->|Yes| K["Save authenticated wallet session"]
+    K --> L[("Query Firestore profile by wallet address")]
+    L --> M{"Profile exists?"}
+
+    M -->|Yes| N["Load name, role and preferences"]
+    N --> O["Update application state"]
+    O --> P(["Open Dashboard"])
+
+    M -->|No| Q["Create wallet-linked profile"]
+    Q --> R["Show role selection"]
+    R --> S{"Select role"}
+
+    S -->|Client| S1["Set role to Client"]
+    S -->|Freelancer| S2["Set role to Freelancer"]
+
+    S1 --> T["Save profile to Firestore"]
+    S2 --> T
+    T --> O
 ```
 
 ---
+
+## 🧠 High-Level System Architecture
+
+```mermaid
+flowchart TD
+    subgraph FE["Frontend — Next.js"]
+        direction TB
+        UI["Dashboard · Jobs · Contracts · Payments"]
+        APP["Application and Integration Layer"]
+        FW["Freighter Wallet<br/>Authentication and Signing"]
+
+        UI --> APP
+        APP -->|"Request signature"| FW
+        FW -->|"Signed transaction"| APP
+    end
+
+    subgraph FB["Firebase — Off-chain"]
+        direction TB
+        DB[("Cloud Firestore")]
+        META["Profiles · Jobs · Applications<br/>Contract Metadata · Transactions<br/>Chat · Analytics · Activity"]
+
+        DB --- META
+    end
+
+    subgraph ST["Stellar Testnet — On-chain"]
+        direction TB
+        RPC["Stellar RPC and Horizon"]
+        EC["Soroban Escrow Contract<br/>Milestones · Authorization · Disputes"]
+        SAC["USDC SEP-41<br/>Stellar Asset Contract"]
+
+        RPC --> EC
+        EC -->|"Token transfer"| SAC
+    end
+
+    APP -->|"Metadata reads and writes"| DB
+    APP -->|"Submit signed transaction"| RPC
+    RPC -->|"Transaction status and state"| APP
+```
 
 ## 👤 User Roles
 
@@ -483,38 +544,6 @@ Only two roles exist.
 | View Contracts / Payments / Transactions | View Contracts / Transactions |
 | Analytics | Analytics |
 
----
-
-## 🧠 High-Level System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      FRONTEND (Next.js)                      │
-│  ┌──────────┐  ┌───────────┐  ┌────────────┐  ┌───────────┐ │
-│  │ Dashboard│  │   Jobs    │  │ Contracts  │  │ Payments  │ │
-│  └──────────┘  └───────────┘  └────────────┘  └───────────┘ │
-│       │               │               │              │      │
-│  ┌────────────────────────────────────────────────────────┐ │
-│  │           Freighter Wallet (Auth + Signing)             │ │
-│  └────────────────────────────────────────────────────────┘ │
-└───────────┬───────────────────────────────┬──────────────────┘
-            │ metadata reads/writes         │ signed transactions
-            ▼                               ▼
-┌───────────────────────────┐   ┌─────────────────────────────────┐
-│   FIREBASE (off-chain)    │   │   STELLAR TESTNET (on-chain)     │
-│                            │   │                                   │
-│  Firestore Collections:    │   │  ┌─────────────────────────────┐ │
-│  • profiles                │   │  │      Escrow Contract         │ │
-│  • jobs                    │   │  │  deposit · release · refund  │ │
-│  • applications             │   │  │  milestone state · auth      │ │
-│  • contracts (metadata)     │   │  └───────────────┬───────────────┘ │
-│  • transactions (index)     │   │                  │ token transfer   │
-│  • notifications            │   │                  ▼                 │
-│  • analytics                │   │        ┌───────────────────┐       │
-│  • activity                 │   │        │  USDC SEP-41 SAC   │       │
-│  • settings                 │   │        └───────────────────┘       │
-└───────────────────────────┘   └─────────────────────────────────┘
-```
 
 ### Division of Responsibility
 
@@ -743,30 +772,6 @@ Never show a generic `"Unknown Error"`. Always explain what happened:
 9. Maintain a clear separation between on-chain logic (Soroban) and off-chain metadata (Firebase).
 10. Use environment variables for all configuration and never hardcode sensitive values.
 11. Preserve the milestone-based escrow workflow and role-based permissions throughout the application.
-
----
-## 🏁 Getting Started
-
-### Prerequisites
-* Node.js & pnpm
-* Rust toolchain (for Soroban contracts)
-* Stellar CLI
-
-### Installation & Deployment
-1. Clone the repo & install packages:
-   ```sh
-   git clone https://github.com/Riyansh-Sarkar/TrustLance
-   cd TrustLance
-   pnpm install
-   ```
-2. Set up environment variables (`cp .env.example .env.local`) and run the local server (`pnpm dev`).
-3. Build and deploy the smart contract to Testnet:
-   ```bash
-   cd contracts/escrow
-   cargo check --target wasm32-unknown-unknown
-   cargo test
-   stellar contract deploy --source admin --network testnet --wasm target/wasm32-unknown-unknown/release/escrow.wasm
-   ```
 
 ---
 
