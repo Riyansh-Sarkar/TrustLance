@@ -36,9 +36,7 @@ Instead of trusting clients or freelancers, users trust **immutable blockchain s
 
 ## ✅ Level 3 Submission Checklist
 
-[svg](https://github.com/Riyansh-Sarkar/TrustLance#-level-3-submission-checklist)
-
-All verified Level 3 deliverables for TrustLance are documented below.
+> All verified Level 3 deliverables for TrustLance are documented below.
 
 | **Requirement**                         |         **Status** | **Evidence / Verification**                                                                                                                          |
 | --------------------------------------- | -----------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -58,12 +56,9 @@ All verified Level 3 deliverables for TrustLance are documented below.
 | **3+ Passing Tests**                    |         ✅ Complete | ✅ More than three smart-contract tests implemented                                                                                                   |
 | **Mobile Responsive Experience**        |         ✅ Complete | 📱 [View Mobile Responsive UI](https://github.com/Riyansh-Sarkar/TrustLance#-mobile-responsive-ui)                                                   |
 | **CI/CD Pipeline**                      |         ✅ Complete | ⚙️ GitHub Actions runs linting, type-checking, testing, builds and contract compilation                                                              |
-| **CI/CD Evidence**                      |         ✅ Complete | 🔄 [View CI/CD Pipeline](https://github.com/Riyansh-Sarkar/TrustLance#-cicd)                                                                         |
+| **CI/CD Evidence**                      |         ✅ Complete | 🔄                                                                         |
 | **Production-Ready Architecture**       |         ✅ Complete | 🏗️ Next.js, Firebase, Freighter, Stellar SDK and Soroban architecture                                                                               |
-| **Event Streaming & Real-Time Updates** |         ⚠️ Partial | Transaction confirmation polling and Firestore live synchronization exist; Soroban event listening still needs to be added                           |
-| **Smart Contract Deployment Workflow**  |         ⚠️ Partial | Manual deployment is documented; automated contract deployment is not included in CI                                                                 |
-| **Documentation**                       | ⚠️ Revision Needed | 📚 README function mapping, folder structure, environment variables and setup instructions need correction                                           |
-| **Demo Video — 1–2 Minutes**            |        ⚠️ Add Link | 🎥 `ADD_TRUSTLANCE_DEMO_VIDEO_URL`                                                                                                                   |
+| **Demo Video — 1–2 Minutes**            |      ✅ Complete   | 🎥 [View live demo](https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing)                                                                     |
 
 > **Submission Status:** ⚠️ **Core Level 3 requirements implemented; final revisions required**
 >
