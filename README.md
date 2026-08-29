@@ -34,9 +34,40 @@ Instead of trusting clients or freelancers, users trust **immutable blockchain s
 
 ## 🏆 Stellar Journey to Master
 
-### 🟠 Current Status: ORANGE BELT — LEVEL 3 COMPLETE
+## ✅ Level 3 Submission Checklist
 
-At Level 3, TrustLance ships a working mini dApp on Stellar Testnet: a deployed escrow Soroban contract, wallet-native authentication via Freighter, a full milestone-based job → contract → escrow → payout workflow wired to Firebase for metadata, and a premium Next.js dashboard across Client and Freelancer roles.
+[svg](https://github.com/Riyansh-Sarkar/TrustLance#-level-3-submission-checklist)
+
+All verified Level 3 deliverables for TrustLance are documented below.
+
+| **Requirement**                         |         **Status** | **Evidence / Verification**                                                                                                                          |
+| --------------------------------------- | -----------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **10+ Meaningful Git Commits**          |         ✅ Complete | Verify through the [TrustLance GitHub commit history](https://github.com/Riyansh-Sarkar/TrustLance/commits/main/)                                    |
+| **Live Deployed Application**           |         ✅ Complete | 🌐 [Launch TrustLance](https://trust-lance-five.vercel.app/)                                                                                         |
+| **Advanced Soroban Smart Contract**     |         ✅ Complete | 🔐 Milestone escrow, role authorization, disputes, refunds and token transfers implemented                                                           |
+| **Inter-Contract Communication**        |         ✅ Complete | 🔗 Escrow communicates with Stellar token contracts through Soroban `token::Client`                                                                  |
+| **Smart Contract Deployment**           |         ✅ Complete | Contract ID: `CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG`                                                                              |
+| **Verified Contract Interaction**       |         ✅ Complete | 🔎 [View Transaction on Stellar Expert](https://stellar.expert/explorer/testnet/tx/aac03092f84f26d43a194b6e7631a537d87887efc096336727a2b9b6245f4d07) |
+| **Complete Escrow Workflow**            |         ✅ Complete | 🔐 Initialize/Fund → Submit Milestone → Approve → Release / Dispute / Cancel                                                                         |
+| **Frontend–Contract Integration**       |         ✅ Complete | ⚙️ Contract functions are connected through [`useEscrow.ts`](https://github.com/Riyansh-Sarkar/TrustLance/blob/main/src/hooks/useEscrow.ts)          |
+| **Freighter Wallet Signing**            |         ✅ Complete | 👛 Wallet authentication, address retrieval and transaction signing implemented                                                                      |
+| **Transaction Status Tracking**         |         ✅ Complete | ⏳ Signing → Submitting → Success / Failure states displayed                                                                                          |
+| **Error Handling & Loading States**     |         ✅ Complete | 🛡️ Wallet, balance, authorization, contract-state and transaction errors handled                                                                    |
+| **Smart Contract Tests**                |         ✅ Complete | 🧪 Escrow and liquidity-pool contract test suites included                                                                                           |
+| **Frontend Tests**                      |         ✅ Complete | 🧪 Unit, Firestore Rules and Playwright E2E tests included                                                                                           |
+| **3+ Passing Tests**                    |         ✅ Complete | ✅ More than three smart-contract tests implemented                                                                                                   |
+| **Mobile Responsive Experience**        |         ✅ Complete | 📱 [View Mobile Responsive UI](https://github.com/Riyansh-Sarkar/TrustLance#-mobile-responsive-ui)                                                   |
+| **CI/CD Pipeline**                      |         ✅ Complete | ⚙️ GitHub Actions runs linting, type-checking, testing, builds and contract compilation                                                              |
+| **CI/CD Evidence**                      |         ✅ Complete | 🔄 [View CI/CD Pipeline](https://github.com/Riyansh-Sarkar/TrustLance#-cicd)                                                                         |
+| **Production-Ready Architecture**       |         ✅ Complete | 🏗️ Next.js, Firebase, Freighter, Stellar SDK and Soroban architecture                                                                               |
+| **Event Streaming & Real-Time Updates** |         ⚠️ Partial | Transaction confirmation polling and Firestore live synchronization exist; Soroban event listening still needs to be added                           |
+| **Smart Contract Deployment Workflow**  |         ⚠️ Partial | Manual deployment is documented; automated contract deployment is not included in CI                                                                 |
+| **Documentation**                       | ⚠️ Revision Needed | 📚 README function mapping, folder structure, environment variables and setup instructions need correction                                           |
+| **Demo Video — 1–2 Minutes**            |        ⚠️ Add Link | 🎥 `ADD_TRUSTLANCE_DEMO_VIDEO_URL`                                                                                                                   |
+
+> **Submission Status:** ⚠️ **Core Level 3 requirements implemented; final revisions required**
+>
+> TrustLance includes a live deployment, deployed Soroban smart contract, verified on-chain contract interaction, advanced milestone escrow workflow, frontend integration, Freighter signing, responsive UI, contract and frontend tests, error handling, transaction tracking and CI/CD automation. Before final resubmission, add Soroban event listening, correct the README documentation and include the 1–2 minute demo video link.
 
 ---
 # Smart Contract Details
