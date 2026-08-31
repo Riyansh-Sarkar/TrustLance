@@ -52,8 +52,6 @@ https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=shari
 
 ## ✅ Level 4 Submission Checklist
 
-[svg](https://github.com/Riyansh-Sarkar/TrustLance#-level-4-submission-checklist)
-
 All required Level 4 deliverables have been completed and verified below.
 
 | **Requirement**                           | **Status** | **Evidence / Verification**                                                                                                                                            |
@@ -170,25 +168,33 @@ Milestone-based escrow smart contract for Soroban (Stellar), tested end-to-end o
 | 7 | `cancel_contract` (negative) | Rejects cancel on progressed project | ✅ |
 | 7 | `cancel_contract` (positive) | Refunds full amount on untouched project | ✅ |
 
-📸 *Test screenshots:*
+## 📸 *Test screenshots:*
 <img width="2264" height="922" alt="Screenshot 2026-07-20 101523" src="https://github.com/user-attachments/assets/eef4ab94-7570-43d4-aa71-ac08bd513238" />
 <img width="2261" height="526" alt="Screenshot 2026-07-20 101629" src="https://github.com/user-attachments/assets/4fea6ca6-1377-42d5-80b4-fee4ea558634" />
 
 
 
 ---
-## UI Demo
+## 📸 UI Demo
 <img width="1903" height="922" alt="Screenshot 2026-08-31 084523" src="https://github.com/user-attachments/assets/7856705f-dc62-4545-8983-fc8779843ae3" />
+
 <br/>
+
 <img width="1916" height="912" alt="image" src="https://github.com/user-attachments/assets/369cc2bd-66cf-4b4c-b081-0cb57a53c349" />
+
 <br/>
+
 ## 📊 Analytics & Monitoring
-<img width="1657" height="949" alt="image" src="https://github.com/user-attachments/assets/e05edf8a-8ad1-4ed7-aa62-f3efb013338c" />
+
+<img width="1657" height="949" alt="image" src="https://github.com/user-attachments/assets/720122bf-4f9a-4355-88e5-2cc3ac920da8" />
+
 
 ## 🔁 CI/CD
 
 <img width="2553" height="1058" alt="Screenshot 2026-07-20 101646" src="https://github.com/user-attachments/assets/369dc209-7347-4023-851c-f632671dc9fb" />
-## Smart Contract Transaction 
+
+## 🔍 Smart Contract Transaction 
+
 <img width="1840" height="892" alt="image" src="https://github.com/user-attachments/assets/f7fbd09c-2be9-457d-9916-6d97d4ad08aa" />
 
 ## 📱 Mobile Responsive UI
