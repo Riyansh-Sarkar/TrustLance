@@ -42,8 +42,7 @@ https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=shari
 | **GitHub Repository**               | 📂 [View TrustLance Repository](https://github.com/Riyansh-Sarkar/TrustLance)                                                                                              |
 | **Live Application**                | 🌐 [Launch TrustLance](https://trust-lance-five.vercel.app/)                                                                                                               |
 | **Demo Video**                      | 🎥 [Watch TrustLance Demo](https://drive.google.com/file/d/1k6pJSqOWX5w7N_glu-pX453643f9D2F8/view?usp=sharing)                                                             |
-| **Monitoring Dashboard**            | 📊 [Open Analytics Dashboard](https://trust-lance-five.vercel.app/dashboard/analytics)                                                                                     |
-| **Analytics & Monitoring**          | 📈 [View Analytics Section](https://github.com/Riyansh-Sarkar/TrustLance#-analytics)                                                                                       |
+| **Analytics & Monitoring**          | 📈 [View Analytics Section](https://github.com/Riyansh-Sarkar/TrustLance#-analytics--monitoring)                                                                                       |
 | **Smart Contract Deployment**       | 🔗 [View Deployed Contract](https://stellar.expert/explorer/testnet/contract/CDJCCPM45OHRO6JDOZKSKVX3KO6AFYN5XEM3D5PF2L5WRNVWQV4X7HYG)                                     |
 | **Verified Contract Interaction**   | 🔍 [View Testnet Transaction](https://stellar.expert/explorer/testnet/tx/aac03092f84f26d43a194b6e7631a537d87887efc096336727a2b9b6245f4d07)                                 |
 | **User Feedback Form**              | 📝 [Open User Feedback Form](https://forms.gle/dRnduvqg7TYt6eU96)                                                                                                          |
@@ -178,10 +177,19 @@ Milestone-based escrow smart contract for Soroban (Stellar), tested end-to-end o
 
 
 ---
+## UI Demo
+<img width="1903" height="922" alt="Screenshot 2026-08-31 084523" src="https://github.com/user-attachments/assets/7856705f-dc62-4545-8983-fc8779843ae3" />
+<br/>
+<img width="1916" height="912" alt="image" src="https://github.com/user-attachments/assets/369cc2bd-66cf-4b4c-b081-0cb57a53c349" />
+<br/>
+## 📊 Analytics & Monitoring
+<img width="1657" height="949" alt="image" src="https://github.com/user-attachments/assets/e05edf8a-8ad1-4ed7-aa62-f3efb013338c" />
 
 ## 🔁 CI/CD
 
 <img width="2553" height="1058" alt="Screenshot 2026-07-20 101646" src="https://github.com/user-attachments/assets/369dc209-7347-4023-851c-f632671dc9fb" />
+## Smart Contract Transaction 
+<img width="1840" height="892" alt="image" src="https://github.com/user-attachments/assets/f7fbd09c-2be9-457d-9916-6d97d4ad08aa" />
 
 ## 📱 Mobile Responsive UI
 
